@@ -1,1622 +1,1618 @@
-<!DOCTYPE html>
-<html lang="zh-CN" data-ui-style="medical">
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>H2Former — 医学影像智能分割系统</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <style>
-    /* ─── CSS Variables (Light Theme Fixed) ────────────── */
-    :root {
-      --bg-primary: #f0f4ff;
-      --bg-secondary: #e8edf8;
-      --bg-card: rgba(255, 255, 255, 0.9);
-      --bg-glass: rgba(59, 130, 246, 0.06);
-      --accent-cyan: #2563eb;
-      --accent-blue: #1e40af;
-      --accent-purple: #4f46e5;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --accent-orange: #f97316;
-      --accent-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-      --text-primary: #0a0f1e;
-      --text-secondary: #3b5280;
-      --text-muted: #7a9ab8;
-      --border: rgba(59, 130, 246, 0.15);
-      --border-bright: rgba(37, 99, 235, 0.6);
-      --shadow-glow: 0 0 50px rgba(37, 99, 235, 0.25);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-      --radius-2xl: 32px;
-      --transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Cooper.Tin">
+<title>szu计算机系统复习笔记7.9</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --code-bg: #f3f4f6;
+  --border: #e5e7eb;
+  --sidebar-bg: #f8fafc;
+  --sidebar-hover: #f1f5f9;
+  --sidebar-active: #e0f2fe;
+  --sidebar-active-color: #0284c7;
+  --link-color: #2563eb;
+  --heading-color: #111827;
+  --blockquote-color: #6b7280;
+  --blockquote-border: #d1d5db;
+  --blockquote-bg: #f9fafb;
+  --table-border: #e5e7eb;
+  --table-header-bg: #f1f5f9;
+  --table-stripe: #f9fafb;
+  --accent: #2563eb;
+  --accent-light: #eff6ff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --radius: 8px;
+}
+@media(prefers-color-scheme:dark){
+  :root {
+    --bg: #0f172a;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --code-bg: #1e293b;
+    --border: #334155;
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --sidebar-active: #1e3a5f;
+    --sidebar-active-color: #38bdf8;
+    --link-color: #60a5fa;
+    --heading-color: #f1f5f9;
+    --blockquote-color: #94a3b8;
+    --blockquote-border: #475569;
+    --blockquote-bg: #1e293b5e;
+    --table-border: #334155;
+    --table-header-bg: #1e293b;
+    --table-stripe: #131d31;
+    --accent: #60a5fa;
+    --accent-light: #1e3a5f;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.4);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans",system-ui,sans-serif;font-size:15px;line-height:1.75;color:var(--text);background:var(--bg)}
+a{color:var(--link-color);text-decoration:none;transition:color .2s}
+a:hover{text-decoration:underline}
+#app{display:flex;height:100vh}
 
-    /* ─── UI Style Themes ───────────────────────────────── */
-    [data-ui-style="medical"] {
-      --accent-cyan: #2563eb;
-      --accent-blue: #1e40af;
-      --accent-purple: #4f46e5;
-      --accent-orange: #f59e0b;
-      --accent-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-      --border-bright: rgba(37, 99, 235, 0.6);
-      --shadow-glow: 0 0 50px rgba(37, 99, 235, 0.25);
-    }
+/* Sidebar */
+#sidebar{width:270px;min-width:270px;height:100vh;overflow-y:auto;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:0;user-select:none;scrollbar-width:thin}
+#sidebar::-webkit-scrollbar{width:4px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sidebar-header{padding:20px 20px 16px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.sidebar-header .title{font-size:15px;font-weight:700;color:var(--heading-color);line-height:1.45;letter-spacing:.3px}
+.sidebar-header .title span{display:inline-block;width:4px;height:16px;background:var(--accent);border-radius:2px;margin-right:8px;vertical-align:-2px}
+.sidebar-header .author{font-size:12px;color:var(--text-secondary);margin-top:6px;padding-left:12px}
+#toc{list-style:none;padding:2px 6px}
+#toc li{position:relative}
+#toc a{display:block;padding:4px 14px;font-size:13px;line-height:1.5;color:var(--text-secondary);border-radius:5px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s}
+#toc a:hover{background:var(--sidebar-hover);color:var(--text)}
+#toc a.active{color:var(--sidebar-active-color);background:var(--sidebar-active);font-weight:600}
+#toc .h1{padding-left:14px;font-weight:600;color:var(--heading-color);margin-top:4px}
+#toc .h2{padding-left:28px;font-size:12.5px}
+#toc .h3{padding-left:42px;font-size:12px}
+#toc .h4{padding-left:56px;font-size:11.5px}
 
-    /* ─── Reset & Base ──────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-    ::selection { background: rgba(0, 212, 255, 0.25); color: var(--text-primary); }
+/* Main */
+#main{flex:1;height:100vh;overflow-y:auto;scroll-behavior:smooth}
+#main::-webkit-scrollbar{width:6px}
+#main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#content{max-width:820px;margin:0 auto;padding:48px 56px 100px}
+#content>*:first-child{margin-top:0}
 
-    /* ─── Scrollbar ─────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 3px; }
+/* Typography */
+#content h1{font-size:1.85em;font-weight:700;margin:0 0 .6em;padding-bottom:.35em;border-bottom:2px solid var(--accent);color:var(--heading-color);letter-spacing:-.3px}
+#content h2{font-size:1.45em;font-weight:600;margin:2em 0 .5em;padding-bottom:.2em;border-bottom:1px solid var(--border);color:var(--heading-color)}
+#content h3{font-size:1.2em;font-weight:600;margin:1.6em 0 .4em;color:var(--heading-color)}
+#content h4{font-size:1.05em;font-weight:600;margin:1.3em 0 .3em;color:var(--heading-color)}
+#content p{margin:0 0 1em}
+#content strong{color:var(--heading-color)}
+#content blockquote{margin:0 0 1em;padding:10px 18px;border-left:4px solid var(--accent);color:var(--blockquote-color);background:var(--blockquote-bg);border-radius:0 var(--radius) var(--radius) 0;font-size:.93em}
+#content code{font-family:"Cascadia Code","Fira Code","Consolas","JetBrains Mono",monospace;font-size:.85em;background:var(--code-bg);padding:2px 6px;border-radius:4px;word-break:break-all}
+#content pre{margin:0 0 1.2em;padding:18px 22px;background:var(--code-bg);border-radius:var(--radius);overflow-x:auto;line-height:1.55;box-shadow:var(--shadow-sm)}
+#content pre code{background:none;padding:0;font-size:.83em}
+#content table{width:100%;border-collapse:separate;border-spacing:0;margin:0 0 1.2em;font-size:.92em;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
+#content table th,#content table td{padding:10px 16px;border:1px solid var(--table-border);text-align:left}
+#content table th{background:var(--table-header-bg);font-weight:600}
+#content table tr:nth-child(even){background:var(--table-stripe)}
+#content table tr:hover{background:var(--sidebar-hover)}
+#content ul,#content ol{margin:0 0 1em;padding-left:1.8em}
+#content li{margin:.25em 0}
+#content li>p{margin:0}
+#content img{max-width:100%;border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+#content hr{border:none;border-top:1px solid var(--border);margin:2.2em 0}
 
-    /* ─── Navigation ────────────────────────────────────── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 48px;
-      background: rgba(240, 244, 255, 0.85);
-      backdrop-filter: blur(24px) saturate(180%);
-      border-bottom: 1px solid var(--border);
-      transition: var(--transition);
-    }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 20px;
-      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none; letter-spacing: -0.5px;
-    }
-    .nav-logo-icon {
-      width: 34px; height: 34px; border-radius: 8px;
-      background: var(--accent-gradient);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
-    .nav-links a {
-      color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500;
-      transition: color var(--transition); position: relative; display: inline-block;
-    }
-    .nav-links a::after {
-      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
-      height: 2px; background: var(--accent-gradient);
-      transform: scaleX(0); transition: transform var(--transition);
-      border-radius: 1px;
-    }
-    .nav-links a:hover { color: var(--accent-cyan); }
-    .nav-links a:hover::after { transform: scaleX(1); }
-    .nav-links a.active { color: var(--accent-cyan); }
-    .nav-links a.active::after { transform: scaleX(1); }
-    .nav-actions { display: flex; align-items: center; gap: 12px; }
-    .btn-primary {
-      padding: 8px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
-      background: var(--accent-gradient); color: #fff; border: none; cursor: pointer;
-      transition: all var(--transition); text-decoration: none; display: inline-block;
-      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-    }
-    .btn-primary:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59, 130, 246, 0.5); }
+/* KaTeX fix */
+.katex-display{margin:.5em 0 .8em!important}
+.katex{font-size:1.05em}
 
-    /* ─── Hero Section ──────────────────────────────────── */
-    #hero {
-      position: relative; min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; padding-top: 80px;
-    }
-    #hero-canvas {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; opacity: 0.7;
-    }
-    .hero-content {
-      position: relative; z-index: 2; text-align: center;
-      max-width: 900px; padding: 0 24px;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 6px 16px; border-radius: 100px;
-      background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3);
-      font-size: 12px; font-weight: 600; color: var(--accent-cyan);
-      margin-bottom: 28px; letter-spacing: 1px; text-transform: uppercase;
-      animation: fadeInDown 0.8s ease both;
-    }
-    .hero-badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent-cyan); animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.toc-anchor{scroll-margin-top:24px}
 
-    .hero-title {
-      font-size: clamp(42px, 6vw, 80px); font-weight: 900; line-height: 1.05;
-      letter-spacing: -2px; margin-bottom: 24px;
-      animation: fadeInUp 0.8s 0.1s ease both;
-    }
-    .hero-title-gradient {
-      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-subtitle {
-      font-size: clamp(16px, 2vw, 20px); color: var(--text-secondary); line-height: 1.8;
-      max-width: 680px; margin: 0 auto 40px;
-      animation: fadeInUp 0.8s 0.2s ease both;
-    }
-    .hero-meta {
-      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 48px;
-      animation: fadeInUp 0.8s 0.3s ease both;
-    }
-    .hero-meta-item {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--text-secondary);
-    }
-    .hero-meta-item span.tag {
-      padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);
-    }
-    .hero-ctas {
-      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-      animation: fadeInUp 0.8s 0.4s ease both;
-    }
-    .btn-hero-primary {
-      padding: 14px 32px; border-radius: 14px; font-size: 15px; font-weight: 700;
-      background: var(--accent-gradient); color: #fff; border: none; cursor: pointer;
-      transition: all var(--transition); box-shadow: 0 4px 24px rgba(59, 130, 246, 0.35);
-      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(59, 130, 246, 0.5); }
-    .btn-hero-secondary {
-      padding: 14px 32px; border-radius: 14px; font-size: 15px; font-weight: 700;
-      background: transparent; color: var(--text-primary);
-      border: 1px solid var(--border-bright); cursor: pointer;
-      transition: all var(--transition); text-decoration: none;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-hero-secondary:hover {
-      background: rgba(0, 212, 255, 0.08); border-color: var(--accent-cyan);
-      transform: translateY(-3px);
-    }
-    .hero-stats {
-      position: absolute; bottom: 48px; left: 0; right: 0;
-      display: flex; justify-content: center; gap: 64px; flex-wrap: wrap;
-      animation: fadeIn 1.2s 0.6s ease both;
-    }
-    .hero-stat { text-align: center; }
-    .hero-stat-number {
-      font-size: 36px; font-weight: 900; letter-spacing: -1px;
-      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-    /* ─── Section Base ──────────────────────────────────── */
-    section { padding: 120px 48px; }
-    .section-header { text-align: center; margin-bottom: 72px; }
-    .section-eyebrow {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-      color: var(--accent-cyan); margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(32px, 4vw, 56px); font-weight: 900;
-      letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 16px;
-    }
-    .section-desc { font-size: 17px; color: var(--text-secondary); max-width: 560px; margin: 0 auto; line-height: 1.7; }
-
-    /* ─── Glass Card ────────────────────────────────────── */
-    .glass-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      transition: all var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-    .glass-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
-      opacity: 0; transition: opacity var(--transition);
-      pointer-events: none;
-    }
-    .glass-card:hover::before { opacity: 1; }
-    .glass-card:hover {
-      border-color: var(--border-bright);
-      box-shadow: var(--shadow-glow);
-      transform: translateY(-6px) scale(1.01);
-    }
-
-    /* ─── Features Grid ─────────────────────────────────── */
-    #features { background: var(--bg-secondary); }
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 28px; max-width: 1200px; margin: 0 auto;
-    }
-    .feature-card {
-      padding: 36px; border-radius: var(--radius-xl);
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      transition: all var(--transition);
-      position: relative; overflow: hidden;
-    }
-    .feature-card:hover {
-      border-color: var(--border-bright);
-      box-shadow: var(--shadow-glow);
-      transform: translateY(-8px) scale(1.01);
-    }
-    .feature-icon {
-      width: 60px; height: 60px; border-radius: 16px; margin-bottom: 20px;
-      display: flex; align-items: center; justify-content: center; font-size: 24px;
-      transition: transform var(--transition);
-    }
-    .feature-card:hover .feature-icon { transform: scale(1.1); }
-    .feature-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; line-height: 1.3; }
-    .feature-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.8; }
-
-    /* ─── Architecture Section ──────────────────────────── */
-    #architecture { background: var(--bg-primary); }
-    .arch-container { max-width: 1200px; margin: 0 auto; }
-    .arch-diagram {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 40px 32px;
-      overflow-x: auto;
-    }
-    .arch-flow {
-      display: flex; align-items: stretch; gap: 0; min-width: 900px;
-      justify-content: center;
-    }
-    .arch-stage {
-      flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;
-    }
-    .arch-stage-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 12px;
-    }
-    .arch-block {
-      width: 100%; padding: 14px 8px; border-radius: 12px; text-align: center;
-      font-size: 12px; font-weight: 600; color: #fff;
-      position: relative; cursor: pointer;
-      transition: all var(--transition);
-    }
-    .arch-block:hover { transform: scale(1.05); }
-    .arch-block.encoder { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-    .arch-block.hybrid { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
-    .arch-block.decoder { background: linear-gradient(135deg, #065f46, #10b981); }
-    .arch-block.output { background: linear-gradient(135deg, #92400e, #f59e0b); }
-    .arch-block.input { background: linear-gradient(135deg, #1f2937, #4b5563); }
-    .arch-arrow {
-      display: flex; align-items: center; padding: 0 6px; color: var(--text-muted); font-size: 18px;
-    }
-    .arch-block-sub { font-size: 10px; opacity: 0.8; margin-top: 4px; }
-    .arch-legend {
-      display: flex; gap: 20px; flex-wrap: wrap; margin-top: 24px; justify-content: center;
-    }
-    .arch-legend-item {
-      display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);
-    }
-    .arch-legend-dot { width: 12px; height: 12px; border-radius: 3px; }
-
-    /* HTB Detail */
-    .htb-detail {
-      margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 18px;
-    }
-    .htb-block {
-      padding: 24px; border-radius: 14px;
-      background: var(--bg-glass); border: 1px solid var(--border);
-      text-align: center; transition: all var(--transition);
-      backdrop-filter: blur(8px);
-    }
-    .htb-block:hover { border-color: var(--border-bright); transform: translateY(-4px); }
-    .htb-block-icon { font-size: 32px; margin-bottom: 12px; transition: transform var(--transition); }
-    .htb-block:hover .htb-block-icon { transform: scale(1.2); }
-    .htb-block-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
-    .htb-block-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
-
-    /* ─── Demo Section ──────────────────────────────────── */
-    #demo { background: var(--bg-secondary); }
-    .demo-container { max-width: 1100px; margin: 0 auto; }
-    .demo-layout {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-    }
-    @media (max-width: 768px) {
-      .demo-layout { grid-template-columns: 1fr; }
-      nav { padding: 14px 20px; }
-      .nav-links { display: none; }
-      section { padding: 60px 20px; }
-      .hero-stats { gap: 32px; bottom: 24px; }
-    }
-    .demo-panel {
-      padding: 28px; border-radius: var(--radius-xl);
-      background: var(--bg-card); border: 1px solid var(--border);
-    }
-    .demo-panel-title {
-      font-size: 13px; font-weight: 700; color: var(--text-secondary);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .demo-panel-title::before {
-      content: ''; width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent-cyan); display: block;
-    }
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 14px; padding: 48px 24px;
-      text-align: center; cursor: pointer; transition: all var(--transition);
-      position: relative; overflow: hidden;
-    }
-    .upload-zone:hover, .upload-zone.drag-over {
-      border-color: var(--accent-cyan);
-      background: rgba(0, 212, 255, 0.05);
-    }
-    .upload-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.7; }
-    .upload-text { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
-    .upload-hint { font-size: 12px; color: var(--text-muted); }
-    .upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .sample-images {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px;
-    }
-    .sample-img-btn {
-      border-radius: 10px; border: 2px solid var(--border); overflow: hidden;
-      cursor: pointer; transition: all var(--transition); background: none; padding: 0;
-      aspect-ratio: 1; position: relative;
-    }
-    .sample-img-btn:hover { border-color: var(--accent-cyan); transform: scale(1.05); }
-    .sample-img-btn.active { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(0,212,255,0.2); }
-    .sample-canvas { width: 100%; height: 100%; display: block; }
-    .seg-result-area {
-      position: relative; border-radius: 14px; overflow: hidden;
-      background: #000; aspect-ratio: 1; border: 1px solid var(--border);
-    }
-    #seg-canvas { width: 100%; height: 100%; display: block; }
-    .seg-overlay-info {
-      position: absolute; bottom: 12px; left: 12px; right: 12px;
-      display: flex; gap: 8px; flex-wrap: wrap;
-    }
-    .seg-tag {
-      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      backdrop-filter: blur(10px);
-    }
-    .seg-tag.ex { background: rgba(239, 68, 68, 0.8); color: #fff; }
-    .seg-tag.he { background: rgba(249, 115, 22, 0.8); color: #fff; }
-    .seg-tag.ma { background: rgba(234, 179, 8, 0.8); color: #fff; }
-    .seg-tag.se { background: rgba(34, 197, 94, 0.8); color: #fff; }
-
-    .metrics-row {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px;
-    }
-    .metric-card {
-      padding: 14px; border-radius: 12px;
-      background: var(--bg-glass); border: 1px solid var(--border);
-      text-align: center;
-    }
-    .metric-value { font-size: 22px; font-weight: 800; }
-    .metric-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
-
-    .process-btn {
-      width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700;
-      background: var(--accent-gradient); color: #fff; border: none; cursor: pointer;
-      transition: all var(--transition); margin-top: 16px;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-    .process-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4); }
-    .process-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .seg-type-selector {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;
-    }
-    .seg-type-btn {
-      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
-      border: 1px solid var(--border); background: transparent; color: var(--text-secondary);
-      cursor: pointer; transition: all var(--transition);
-    }
-    .seg-type-btn.active {
-      background: var(--accent-blue); color: #fff; border-color: var(--accent-blue);
-    }
-    .seg-type-btn:hover:not(.active) { border-color: var(--accent-cyan); color: var(--accent-cyan); }
-
-    /* ─── Performance Charts ────────────────────────────── */
-    #performance { background: var(--bg-primary); }
-    .perf-container { max-width: 1200px; margin: 0 auto; }
-    .charts-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 24px;
-    }
-    .chart-card {
-      padding: 28px; border-radius: var(--radius-xl);
-      background: var(--bg-card); border: 1px solid var(--border);
-    }
-    .chart-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .chart-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
-    .chart-wrapper { position: relative; height: 220px; }
-
-    /* Comparison Table */
-    .compare-table-wrap {
-      overflow-x: auto; margin-top: 32px;
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border);
-    }
-    .compare-table {
-      width: 100%; border-collapse: collapse; font-size: 13px;
-      min-width: 700px;
-    }
-    .compare-table th {
-      padding: 14px 20px; text-align: left;
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--text-secondary); font-weight: 600;
-      border-bottom: 1px solid var(--border);
-      font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .compare-table td {
-      padding: 12px 20px; border-bottom: 1px solid var(--border);
-      color: var(--text-primary);
-    }
-    .compare-table tr:last-child td { border-bottom: none; }
-    .compare-table tr:hover td { background: var(--bg-glass); }
-    .compare-table tr.highlight td { background: rgba(0, 212, 255, 0.06); }
-    .compare-table tr.highlight td:first-child { font-weight: 800; color: var(--accent-cyan); }
-    .best-value { color: var(--accent-green); font-weight: 700; }
-
-    /* ─── Datasets Section ──────────────────────────────── */
-    #datasets { background: var(--bg-secondary); }
-    .datasets-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px; max-width: 1100px; margin: 0 auto;
-    }
-    .dataset-card {
-      padding: 28px; border-radius: var(--radius-xl);
-      background: var(--bg-card); border: 1px solid var(--border);
-      transition: all var(--transition);
-    }
-    .dataset-card:hover {
-      border-color: var(--border-bright);
-      transform: translateY(-4px); box-shadow: var(--shadow-glow);
-    }
-    .dataset-icon {
-      width: 48px; height: 48px; border-radius: 12px; margin-bottom: 16px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px;
-    }
-    .dataset-name { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-    .dataset-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6; }
-    .dataset-stats { display: flex; gap: 16px; flex-wrap: wrap; }
-    .dataset-stat { font-size: 12px; color: var(--text-muted); }
-    .dataset-stat strong { color: var(--accent-blue); font-size: 15px; }
-
-    /* ─── Tech Stack ────────────────────────────────────── */
-    #tech { background: var(--bg-primary); }
-    .tech-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px; max-width: 960px; margin: 0 auto;
-    }
-    .tech-card {
-      padding: 24px; border-radius: var(--radius-lg);
-      background: var(--bg-glass); border: 1px solid var(--border);
-      text-align: center; transition: all var(--transition);
-    }
-    .tech-card:hover { border-color: var(--border-bright); transform: translateY(-4px); }
-    .tech-logo { font-size: 36px; margin-bottom: 10px; }
-    .tech-name { font-size: 14px; font-weight: 700; }
-    .tech-role { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-    /* ─── Footer ────────────────────────────────────────── */
-    footer {
-      padding: 48px;
-      border-top: 1px solid var(--border);
-      display: flex; flex-direction: column; align-items: center;
-      gap: 16px; text-align: center;
-      background: var(--bg-secondary);
-    }
-    .footer-logo {
-      font-size: 22px; font-weight: 900;
-      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .footer-text { font-size: 13px; color: var(--text-muted); line-height: 1.8; }
-    .footer-badge {
-      padding: 6px 16px; border-radius: 100px;
-      background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2);
-      font-size: 11px; color: var(--accent-blue); font-weight: 600;
-    }
-
-    /* ─── Loading Spinner ───────────────────────────────── */
-    .spinner {
-      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ─── Scroll-in animations ──────────────────────────── */
-    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* ─── Progress Bar ──────────────────────────────────── */
-    .progress-bar-wrap {
-      height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 12px;
-    }
-    .progress-bar-fill {
-      height: 100%; border-radius: 2px;
-      background: var(--accent-gradient);
-      transition: width 1.5s ease;
-    }
-  </style>
+/* Toggle */
+#toggle-btn{position:fixed;top:12px;left:12px;z-index:100;width:32px;height:32px;display:none;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:18px;color:var(--text);transition:background .2s,box-shadow .2s;box-shadow:var(--shadow-sm)}
+#toggle-btn:hover{background:var(--sidebar-hover);box-shadow:var(--shadow-md)}
+#overlay{display:none;position:fixed;inset:0;z-index:98;background:rgba(0,0,0,.35);backdrop-filter:blur(2px)}
+@media(max-width:768px){
+  #toggle-btn{display:flex}
+  #sidebar{position:fixed;z-index:99;left:-290px;transition:left .25s ease}
+  #sidebar.open{left:0}
+  #content{padding:32px 20px 80px}
+  #overlay.show{display:block}
+}
+</style>
 </head>
 <body>
-
-<!-- ═══════════════════ NAV ═══════════════════ -->
-<nav id="main-nav">
-  <a href="#hero" class="nav-logo">
-    <div class="nav-logo-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-      </svg>
-    </div>
-    H2Former
-  </a>
-  <ul class="nav-links">
-    <li><a href="#features">特性</a></li>
-    <li><a href="#architecture">架构</a></li>
-    <li><a href="#demo">在线演示</a></li>
-    <li><a href="#performance">性能评估</a></li>
-    <li><a href="#datasets">数据集</a></li>
-  </ul>
-  <div class="nav-actions">
-    <a href="https://github.com/NKUhealong/H2Former" target="_blank" class="btn-primary">GitHub →</a>
-  </div>
+<div id="app">
+<button id="toggle-btn" onclick="toggleSidebar()" title="目录">&equiv;</button>
+<div id="overlay" onclick="toggleSidebar()"></div>
+<nav id="sidebar">
+<div class="sidebar-header"><div class="title"><span></span>szu计算机系统复习笔记7.9</div><div class="author">Cooper.Tin</div></div>
+<ul id="toc"></ul>
 </nav>
+<div id="main"><div id="content"></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script id="__md" type="text/plain"># 计算机系统期末复习笔记
 
-<!-- ═══════════════════ HERO ════════════════════ -->
-<section id="hero">
-  <canvas id="hero-canvas"></canvas>
-  <div class="hero-content">
-    <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      IEEE Trans. Medical Imaging 2023 · Vol.42 No.9
-    </div>
-    <h1 class="hero-title">
-      <span class="hero-title-gradient">H2Former</span><br/>医学影像智能分割系统
-    </h1>
-    <p class="hero-subtitle">
-      基于高效层次混合Transformer架构，融合卷积神经网络局部特征提取能力与Transformer全局长程依赖建模优势，
-      在五大医学影像分割基准上超越现有方法，参数量更小、精度更高。
-    </p>
-    <div class="hero-meta">
-      <div class="hero-meta-item">
-        <span class="tag">ResNet-34</span> 局部特征编码器
-      </div>
-      <div class="hero-meta-item">
-        <span class="tag">Swin-T</span> 全局注意力模块
-      </div>
-      <div class="hero-meta-item">
-        <span class="tag">MSCA</span> 多尺度通道注意力
-      </div>
-      <div class="hero-meta-item">
-        <span class="tag">HTB</span> 层次混合Transformer块
-      </div>
-    </div>
-    <div class="hero-ctas">
-      <a href="#demo" class="btn-hero-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <polygon points="5,3 19,12 5,21"/>
-        </svg>
-        立即体验演示
-      </a>
-      <a href="#architecture" class="btn-hero-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        了解架构
-      </a>
-    </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <div class="hero-stat-number" data-count="91.2">0</div>
-      <div class="hero-stat-label">Dice Score (%) · 皮肤病变</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-number" data-count="5">0</div>
-      <div class="hero-stat-label">支持分割任务</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-number" data-count="28.5">0</div>
-      <div class="hero-stat-label">模型参数量 (M)</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-number" data-count="84.7">0</div>
-      <div class="hero-stat-label">DSC (%) · 多器官分割</div>
-    </div>
-  </div>
-</section>
+## 各章知识点目录
 
-<!-- ════════════════ FEATURES ══════════════════ -->
-<section id="features">
-  <div class="section-header reveal">
-    <div class="section-eyebrow">核心优势</div>
-    <h2 class="section-title">为什么选择 H2Former？</h2>
-    <p class="section-desc">整合CNN与Transformer的双重优势，专为医学影像低数据场景优化设计</p>
-  </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(59,130,246,0.15)">🔬</div>
-      <div class="feature-title">层次混合Transformer块 (HTB)</div>
-      <div class="feature-desc">同时捕获局部空间关系、全局特征编码和多尺度通道注意力，将三类特征融合到统一模块，学习更优的病灶特征表征。</div>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(139,92,246,0.15)">🧠</div>
-      <div class="feature-title">多尺度通道注意力 (MSCA)</div>
-      <div class="feature-desc">利用ECA-Net高效通道注意力机制，在不同分辨率尺度上自适应地对关键通道加权，有效应对不同大小和形状的病灶变化。</div>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(16,185,129,0.15)">🎯</div>
-      <div class="feature-title">Patch Expanding解码路径</div>
-      <div class="feature-desc">采用创新的Patch Expanding上采样策略替代传统转置卷积，在Transformer解码器中精准恢复高分辨率特征图，保留细粒度边缘信息。</div>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(239,68,68,0.15)">⚡</div>
-      <div class="feature-title">数据高效 · 低数据场景适配</div>
-      <div class="feature-desc">CNN的归纳偏置与ImageNet预训练相结合，使模型在有限医学标注数据下快速收敛，显著优于纯Transformer方案。</div>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(245,158,11,0.15)">📊</div>
-      <div class="feature-title">2D & 3D 双模态支持</div>
-      <div class="feature-desc">统一架构同时支持2D（视网膜/皮肤/息肉）和3D（心脏ACDC/腹部Synapse）医学影像分割任务，无需独立设计模型。</div>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon" style="background:rgba(0,212,255,0.12)">🏆</div>
-      <div class="feature-title">SOTA性能 · 五大基准超越</div>
-      <div class="feature-desc">在IDRiD、ISIC2016、Kvasir-SEG、ACDC、Synapse五个权威数据集上全面超越TransUNet、Swin-UNet等最新方法，性能领先显著。</div>
-    </div>
-  </div>
-</section>
 
-<!-- ══════════════ ARCHITECTURE ════════════════ -->
-<section id="architecture">
-  <div class="arch-container">
-    <div class="section-header reveal">
-      <div class="section-eyebrow">网络架构</div>
-      <h2 class="section-title">H2Former 架构全景</h2>
-      <p class="section-desc">层次化编解码器设计，在四个分辨率尺度上并行运行CNN与Transformer分支</p>
-    </div>
 
-    <div class="arch-diagram reveal">
-      <div class="arch-flow">
-        <!-- Input -->
-        <div class="arch-stage" style="max-width:110px">
-          <div class="arch-stage-label">输入</div>
-          <div class="arch-block input" style="padding:20px 8px">
-            <div>医学影像</div>
-            <div class="arch-block-sub">H×W×C</div>
-          </div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <!-- Encoder -->
-        <div class="arch-stage">
-          <div class="arch-stage-label">编码器 (ResNet-34)</div>
-          <div style="display:flex;flex-direction:column;gap:6px;width:100%">
-            <div class="arch-block encoder" style="opacity:1">Stage 1 <span class="arch-block-sub">64ch · H/2</span></div>
-            <div class="arch-block encoder" style="opacity:0.85">Stage 2 <span class="arch-block-sub">128ch · H/4</span></div>
-            <div class="arch-block encoder" style="opacity:0.7">Stage 3 <span class="arch-block-sub">256ch · H/8</span></div>
-            <div class="arch-block encoder" style="opacity:0.55">Stage 4 <span class="arch-block-sub">512ch · H/16</span></div>
-          </div>
-        </div>
-        <div class="arch-arrow">⊕</div>
-        <!-- HTB -->
-        <div class="arch-stage">
-          <div class="arch-stage-label">HTB (Hybrid Transformer Block)</div>
-          <div style="display:flex;flex-direction:column;gap:6px;width:100%">
-            <div class="arch-block hybrid">HTB-1 <span class="arch-block-sub">MSCA + W-MSA</span></div>
-            <div class="arch-block hybrid">HTB-2 <span class="arch-block-sub">MSCA + W-MSA</span></div>
-            <div class="arch-block hybrid">HTB-3 <span class="arch-block-sub">MSCA + SW-MSA</span></div>
-            <div class="arch-block hybrid">HTB-4 <span class="arch-block-sub">MSCA + SW-MSA</span></div>
-          </div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <!-- Decoder -->
-        <div class="arch-stage">
-          <div class="arch-stage-label">解码器 (Patch Expanding)</div>
-          <div style="display:flex;flex-direction:column;gap:6px;width:100%">
-            <div class="arch-block decoder" style="opacity:0.55">Expand 4 <span class="arch-block-sub">Skip + ×2 Up</span></div>
-            <div class="arch-block decoder" style="opacity:0.7">Expand 3 <span class="arch-block-sub">Skip + ×2 Up</span></div>
-            <div class="arch-block decoder" style="opacity:0.85">Expand 2 <span class="arch-block-sub">Skip + ×2 Up</span></div>
-            <div class="arch-block decoder" style="opacity:1">Expand 1 <span class="arch-block-sub">Skip + ×2 Up</span></div>
-          </div>
-        </div>
-        <div class="arch-arrow">→</div>
-        <!-- Output -->
-        <div class="arch-stage" style="max-width:110px">
-          <div class="arch-stage-label">输出</div>
-          <div class="arch-block output" style="padding:20px 8px">
-            <div>分割掩码</div>
-            <div class="arch-block-sub">H×W×K</div>
-          </div>
-        </div>
-      </div>
+## 第一章 计算机系统概述
 
-      <div class="arch-legend">
-        <div class="arch-legend-item">
-          <div class="arch-legend-dot" style="background:linear-gradient(135deg,#1e40af,#3b82f6)"></div>
-          CNN编码器 (ResNet-34)
-        </div>
-        <div class="arch-legend-item">
-          <div class="arch-legend-dot" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6)"></div>
-          层次混合Transformer块 (HTB)
-        </div>
-        <div class="arch-legend-item">
-          <div class="arch-legend-dot" style="background:linear-gradient(135deg,#065f46,#10b981)"></div>
-          Patch Expanding解码器
-        </div>
-        <div class="arch-legend-item">
-          <div class="arch-legend-dot" style="background:linear-gradient(135deg,#92400e,#f59e0b)"></div>
-          分割输出头
-        </div>
-      </div>
+1. 课程与系统层次
+1.1 课程目标、教材与考核方式
+1.2 计算机系统抽象层次（问题→算法→程序→ISA→微体系结构→电路→器件）
+1.3 抽象层次图（Application到Physics各层对应课程）
+2. 计算机求解问题的过程
+2.1 问题描述、算法、程序三步转化
+2.2 图灵机与计算通用性
+2.3 抽象简化设计的意义（具体→抽象→具体）
+3. 计算机体系结构八大思想
+3.1 摩尔定律及其延续技术
+3.2 抽象、加速大概率事件（Amdahl定律）
+3.3 并行、流水线、预测、存储层次、冗余可靠性
 
-      <!-- HTB Detail -->
-      <div class="htb-detail">
-        <div class="htb-block">
-          <div class="htb-block-icon">🔷</div>
-          <div class="htb-block-title">W-MSA</div>
-          <div class="htb-block-desc">窗口多头自注意力<br/>建模局部空间关系</div>
-        </div>
-        <div class="htb-block">
-          <div class="htb-block-icon">🔶</div>
-          <div class="htb-block-title">SW-MSA</div>
-          <div class="htb-block-desc">移位窗口注意力<br/>跨窗口全局交互</div>
-        </div>
-        <div class="htb-block">
-          <div class="htb-block-icon">🟣</div>
-          <div class="htb-block-title">MSCA</div>
-          <div class="htb-block-desc">多尺度通道注意力<br/>4种Patch嵌入融合</div>
-        </div>
-        <div class="htb-block">
-          <div class="htb-block-icon">🟢</div>
-          <div class="htb-block-title">FFN</div>
-          <div class="htb-block-desc">前馈网络<br/>MLP特征变换</div>
-        </div>
-        <div class="htb-block">
-          <div class="htb-block-icon">🔵</div>
-          <div class="htb-block-title">LayerNorm</div>
-          <div class="htb-block-desc">层归一化<br/>稳定训练过程</div>
-        </div>
-        <div class="htb-block">
-          <div class="htb-block-icon">⚪</div>
-          <div class="htb-block-title">Skip Connect</div>
-          <div class="htb-block-desc">跳跃连接<br/>保留多尺度细节</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+## 第二章 数据表示
 
-<!-- ═════════════════ DEMO ══════════════════════ -->
-<section id="demo">
-  <div class="demo-container">
-    <div class="section-header reveal">
-      <div class="section-eyebrow">在线演示</div>
-      <h2 class="section-title">医学影像分割体验</h2>
-      <p class="section-desc">上传医学影像或选择示例图像，实时查看H2Former分割效果</p>
-    </div>
+1. 进位计数制
+1.1 十进制、二进制、十六进制及相互转换
+1.2 位（bit）与状态数（2的n次方）
+2. 数值型数据编码
+2.1 无符号数表示
+2.2 原码、反码表示及问题（0的多种表示）
+2.3 补码定义、性质与运算规则
+3. 补码运算
+3.1 补码加减法公式 [X+Y]补=[X]补+[Y]补
+3.2 纯小数补码表示
+3.3 计算实例（X=9,Y=3求和差）
 
-    <div class="demo-layout">
-      <!-- Left: Input -->
-      <div>
-        <div class="demo-panel reveal">
-          <div class="demo-panel-title">输入图像</div>
-          <div class="upload-zone" id="upload-zone">
-            <input type="file" class="upload-input" id="img-input" accept="image/*" onchange="handleImageUpload(event)" />
-            <div class="upload-icon">🖼️</div>
-            <div class="upload-text">拖拽图像至此，或点击选择</div>
-            <div class="upload-hint">支持 PNG · JPG · BMP · TIFF</div>
-          </div>
+## 第三章 数字逻辑基础
 
-          <div style="margin-top:16px;font-size:12px;color:var(--text-muted);margin-bottom:10px">或选择示例图像：</div>
-          <div class="sample-images" id="sample-images">
-            <!-- Canvases rendered by JS -->
-          </div>
+1. 晶体管与开关电路
+1.1 微处理器晶体管规模、层次结构
+1.2 双极型与MOS（n-MOS/p-MOS）工作原理
+1.3 CMOS互补结构及工艺流程
+2. 逻辑门与布尔运算
+2.1 AND/OR/NOT/NAND/NOR真值表
+2.2 摩根定律及门电路转换
+2.3 多输入门的实现方法
+3. 时序逻辑与状态机
+3.1 D触发器、主从锁存器
+3.2 状态图与状态转换分析
+3.3 有限状态机结构（组合逻辑+存储单元）
+3.4 内存实现（地址译码、字选择、SRAM/DRAM）
+3.5 Verilog基础语句（assign组合逻辑，always时序逻辑）
 
-          <div class="seg-type-selector">
-            <div style="font-size:12px;color:var(--text-muted);width:100%;margin-bottom:6px">分割任务类型：</div>
-            <button class="seg-type-btn active" onclick="setSegType('fundus',this)">🔴 视网膜病变</button>
-            <button class="seg-type-btn" onclick="setSegType('skin',this)">🟡 皮肤病变</button>
-            <button class="seg-type-btn" onclick="setSegType('polyp',this)">🟢 结肠息肉</button>
-            <button class="seg-type-btn" onclick="setSegType('cardiac',this)">🔵 心脏分割</button>
-          </div>
+## 第四章 冯·诺依曼模型
 
-          <button class="process-btn" id="process-btn" onclick="runSegmentation()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
-            运行 H2Former 分割
-          </button>
-        </div>
-      </div>
+1. 模型基本组成
+1.1 五大部件：运算器、控制器、存储器、输入、输出设备
+1.2 二进制表示指令与数据、存储程序方式
+2. 存储器与功能单元
+2.1 MAR/MDR寄存器与LOAD/STORE操作
+2.2 ALU与寄存器组（LC-3的8个16位寄存器）
+2.3 输入输出设备接口（KBSR/KBDR, DSR/DDR）
+3. 指令执行流程
+3.1 指令结构（操作码+操作数）
+3.2 指令执行六步骤：Fetch→Decode→EA→OP→EX→Store
+3.3 LC-3有限状态机控制流程图
 
-      <!-- Right: Output -->
-      <div>
-        <div class="demo-panel reveal">
-          <div class="demo-panel-title">分割结果</div>
-          <div class="seg-result-area">
-            <canvas id="seg-canvas" width="512" height="512"></canvas>
-            <div class="seg-overlay-info" id="seg-overlay-info" style="display:none">
-              <span class="seg-tag ex">硬性渗出 EX</span>
-              <span class="seg-tag he">出血 HE</span>
-              <span class="seg-tag ma">微动脉瘤 MA</span>
-              <span class="seg-tag se">软性渗出 SE</span>
-            </div>
-          </div>
+## 第五章 LC-3指令集结构（ISA）
 
-          <div style="font-size:12px;color:var(--text-muted);margin-top:16px;margin-bottom:8px">分割性能指标：</div>
-          <div class="metrics-row" id="metrics-row">
-            <div class="metric-card">
-              <div class="metric-value" id="m-dice" style="color:var(--accent-cyan)">—</div>
-              <div class="metric-label">Dice (%)</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value" id="m-iou" style="color:var(--accent-blue)">—</div>
-              <div class="metric-label">IoU (%)</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value" id="m-acc" style="color:var(--accent-green)">—</div>
-              <div class="metric-label">Acc (%)</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value" id="m-time" style="color:var(--accent-purple)">—</div>
-              <div class="metric-label">推理 (ms)</div>
-            </div>
-          </div>
+1. ISA基本要素
+1.1 内存组织（寻址空间、寻址能力）
+1.2 寄存器组与操作码分类（运算/数据搬移/控制指令）
+1.3 条件码NZP的设置规则
+2. 运算与数据搬移指令
+2.1 ADD/AND/NOT指令格式（寄存器模式、立即数模式）
+2.2 LD/LDR/LDI与ST/STR/STI寻址方式对比
+2.3 LEA指令与有效地址计算
+3. 寻址模式与控制指令
+3.1 PC相对寻址原理与偏移范围限制
+3.2 间接寻址、基址+偏移寻址
+3.3 BR条件分支、JMP绝对跳转、TRAP系统调用
 
-          <div id="progress-wrap" style="display:none;margin-top:12px">
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">处理进度：</div>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+## 第六章 程序设计与调试
 
-<!-- ══════════════ PERFORMANCE ══════════════════ -->
-<section id="performance">
-  <div class="perf-container">
-    <div class="section-header reveal">
-      <div class="section-eyebrow">性能评估</div>
-      <h2 class="section-title">与SOTA方法全面对比</h2>
-      <p class="section-desc">在五大公开数据集上验证，H2Former以更少参数量实现更高分割精度</p>
-    </div>
+1. 问题求解与系统分解
+1.1 问题描述的模糊性处理
+1.2 顺序、条件、循环三种基本结构
+1.3 自然语言到LC-3控制指令的映射
+2. 高级语言结构对应实现
+2.1 if/while/do-while/for在LC-3中的实现
+2.2 逐步细化的程序设计方法
+3. 程序调试技术
+3.1 语法错误 vs 逻辑错误 vs 数据错误
+3.2 单步执行、断点、监视点
+3.3 调试案例分析（循环次数错误、地址错误、无限循环）
 
-    <div class="charts-grid">
-      <div class="chart-card reveal">
-        <div class="chart-title">皮肤病变分割 (ISIC 2016)</div>
-        <div class="chart-subtitle">Dice Score 对比 (%)</div>
-        <div class="chart-wrapper"><canvas id="chart-skin"></canvas></div>
-      </div>
-      <div class="chart-card reveal">
-        <div class="chart-title">结肠息肉分割 (Kvasir-SEG)</div>
-        <div class="chart-subtitle">Dice Score 对比 (%)</div>
-        <div class="chart-wrapper"><canvas id="chart-polyp"></canvas></div>
-      </div>
-      <div class="chart-card reveal">
-        <div class="chart-title">多器官分割 (Synapse)</div>
-        <div class="chart-subtitle">DSC % 各器官对比</div>
-        <div class="chart-wrapper"><canvas id="chart-synapse"></canvas></div>
-      </div>
-      <div class="chart-card reveal">
-        <div class="chart-title">心脏分割 (ACDC)</div>
-        <div class="chart-subtitle">Dice Score 各结构对比 (%)</div>
-        <div class="chart-wrapper"><canvas id="chart-acdc"></canvas></div>
-      </div>
-    </div>
+## 第七章 汇编语言
 
-    <!-- 对比表格 -->
-    <div style="margin-top:40px" class="reveal">
-      <h3 style="font-size:18px;font-weight:700;margin-bottom:6px">综合性能对比表</h3>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:0">ISIC 2016皮肤病变分割 · 与CNN、Transformer及Hybrid方法全面比较</p>
-      <div class="compare-table-wrap">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>方法</th><th>类型</th><th>Acc (%)</th><th>Dice (%)</th><th>IoU (%)</th><th>参数量 (M)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>UNet</td><td>CNN</td><td>93.5</td><td>85.8</td><td>77.1</td><td>31.0</td></tr>
-            <tr><td>UNet++</td><td>CNN</td><td>94.1</td><td>87.1</td><td>78.9</td><td>36.6</td></tr>
-            <tr><td>Att-UNet</td><td>CNN</td><td>94.0</td><td>86.4</td><td>78.2</td><td>34.9</td></tr>
-            <tr><td>TransUNet</td><td>Hybrid</td><td>94.6</td><td>88.4</td><td>80.5</td><td>93.2</td></tr>
-            <tr><td>Swin-UNet</td><td>Transformer</td><td>94.3</td><td>88.0</td><td>80.0</td><td>41.4</td></tr>
-            <tr><td>MISSFormer</td><td>Transformer</td><td>94.5</td><td>88.6</td><td>80.8</td><td>42.5</td></tr>
-            <tr class="highlight">
-              <td>H2Former (Ours)</td><td>Hybrid</td>
-              <td class="best-value">95.1</td>
-              <td class="best-value">91.2</td>
-              <td class="best-value">84.0</td>
-              <td class="best-value">28.5</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
+1. 汇编基础
+1.1 机器语言→汇编语言→高级语言层次关系
+1.2 汇编器功能与指令格式（标号/操作码/操作数/注释）
+2. 伪操作指令
+2.1 .ORIG/.END程序起止
+2.2 .FILL/.BLKW变量分配
+2.3 .STRINGZ字符串定义
+3. 汇编过程与目标文件
+3.1 两遍扫描：符号表生成与机器码翻译
+3.2 常见汇编错误类型
+3.3 LC-3目标文件（.obj）结构
 
-<!-- ══════════════ DATASETS ══════════════════════ -->
-<section id="datasets">
-  <div class="section-header reveal">
-    <div class="section-eyebrow">支持数据集</div>
-    <h2 class="section-title">五大医学影像基准</h2>
-    <p class="section-desc">覆盖眼底、皮肤、消化道、心脏、腹部多个医学影像分割领域</p>
-  </div>
-  <div class="datasets-grid">
-    <div class="dataset-card reveal">
-      <div class="dataset-icon" style="background:rgba(239,68,68,0.15)">👁️</div>
-      <div class="dataset-name">IDRiD</div>
-      <div class="dataset-desc">印度糖尿病视网膜病变数据集，包含眼底病变4类像素级标注（硬性渗出、出血、微动脉瘤、软性渗出）。</div>
-      <div class="dataset-stats">
-        <div class="dataset-stat"><strong>81</strong><br/>眼底图像</div>
-        <div class="dataset-stat"><strong>4</strong><br/>病变类别</div>
-        <div class="dataset-stat"><strong>2848×4288</strong><br/>分辨率</div>
-      </div>
-    </div>
-    <div class="dataset-card reveal">
-      <div class="dataset-icon" style="background:rgba(245,158,11,0.15)">🔬</div>
-      <div class="dataset-name">ISIC 2016</div>
-      <div class="dataset-desc">皮肤镜病变分割数据集，由ISBI 2016会议举办的皮肤黑色素瘤检测挑战赛提供。</div>
-      <div class="dataset-stats">
-        <div class="dataset-stat"><strong>900</strong><br/>训练图像</div>
-        <div class="dataset-stat"><strong>379</strong><br/>测试图像</div>
-        <div class="dataset-stat"><strong>512×512</strong><br/>处理尺寸</div>
-      </div>
-    </div>
-    <div class="dataset-card reveal">
-      <div class="dataset-icon" style="background:rgba(16,185,129,0.15)">🟢</div>
-      <div class="dataset-name">Kvasir-SEG</div>
-      <div class="dataset-desc">结肠息肉分割数据集，包含胃肠道内镜图像，需精确分割息肉区域，挑战在于形状多变和低对比度。</div>
-      <div class="dataset-stats">
-        <div class="dataset-stat"><strong>1000</strong><br/>内镜图像</div>
-        <div class="dataset-stat"><strong>5-fold</strong><br/>交叉验证</div>
-        <div class="dataset-stat"><strong>512×512</strong><br/>处理尺寸</div>
-      </div>
-    </div>
-    <div class="dataset-card reveal">
-      <div class="dataset-icon" style="background:rgba(59,130,246,0.15)">❤️</div>
-      <div class="dataset-name">ACDC</div>
-      <div class="dataset-desc">自动心脏诊断挑战数据集，包含CMR心脏磁共振图像，需分割右心室、心肌、左心室三个结构。</div>
-      <div class="dataset-stats">
-        <div class="dataset-stat"><strong>100</strong><br/>患者MRI</div>
-        <div class="dataset-stat"><strong>3</strong><br/>心脏结构</div>
-        <div class="dataset-stat"><strong>320×320</strong><br/>处理尺寸</div>
-      </div>
-    </div>
-    <div class="dataset-card reveal">
-      <div class="dataset-icon" style="background:rgba(139,92,246,0.15)">🫀</div>
-      <div class="dataset-name">Synapse</div>
-      <div class="dataset-desc">腹部多器官CT分割数据集，包含主动脉、胆囊、脾脏、左肾、右肾、肝脏、胰腺、胃等8个器官。</div>
-      <div class="dataset-stats">
-        <div class="dataset-stat"><strong>30</strong><br/>腹部CT</div>
-        <div class="dataset-stat"><strong>8</strong><br/>腹部器官</div>
-        <div class="dataset-stat"><strong>480×480</strong><br/>处理尺寸</div>
-      </div>
-    </div>
-  </div>
-</section>
+## 第八章 数据结构
 
-<!-- ════════════════ TECH ═══════════════════════ -->
-<section id="tech">
-  <div class="section-header reveal">
-    <div class="section-eyebrow">技术栈</div>
-    <h2 class="section-title">核心技术组件</h2>
-  </div>
-  <div class="tech-grid">
-    <div class="tech-card reveal">
-      <div class="tech-logo">🔥</div>
-      <div class="tech-name">PyTorch</div>
-      <div class="tech-role">深度学习框架</div>
-    </div>
-    <div class="tech-card reveal">
-      <div class="tech-logo">🤗</div>
-      <div class="tech-name">timm</div>
-      <div class="tech-role">Swin Transformer预训练</div>
-    </div>
-    <div class="tech-card reveal">
-      <div class="tech-logo">🖥️</div>
-      <div class="tech-name">RTX 3090</div>
-      <div class="tech-role">GPU训练平台</div>
-    </div>
-    <div class="tech-card reveal">
-      <div class="tech-logo">📐</div>
-      <div class="tech-name">ResNet-34</div>
-      <div class="tech-role">ImageNet预训练骨干</div>
-    </div>
-    <div class="tech-card reveal">
-      <div class="tech-logo">👁️</div>
-      <div class="tech-name">OpenCV</div>
-      <div class="tech-role">图像预处理</div>
-    </div>
-    <div class="tech-card reveal">
-      <div class="tech-logo">📊</div>
-      <div class="tech-name">AdamW</div>
-      <div class="tech-role">优化器 + Poly LR</div>
-    </div>
-  </div>
-</section>
+1. 子程序机制
+1.1 JSR/JSRR指令与PC相对/寄存器寻址
+1.2 被调用者保存（Callee Save）规范
+1.3 子程序调用示例（FirstChar/CountChar）
+2. 栈（Stack）
+2.1 LIFO特性与PUSH/POP操作
+2.2 栈的内存实现（TOP指针，向低地址增长）
+2.3 栈满/栈空检测
+3. 队列与字符串
+3.1 队列FIFO特性、环形队列实现
+3.2 队列满/空判断与上溢/下溢检测
+3.3 字符串存储（哨兵结尾法 vs 长度前缀法）
 
-<!-- ═══════════════ FOOTER ══════════════════════ -->
-<footer>
-  <div class="footer-logo">H2Former</div>
-  <div class="footer-text">
-    基于论文 "H2Former: An Efficient Hierarchical Hybrid Transformer for Medical Image Segmentation"<br/>
-    IEEE Transactions on Medical Imaging, Vol.42, No.9, September 2023<br/>
-    南开大学计算机学院 · 中国大学生计算机设计大赛 · 人工智能应用赛道
-  </div>
-  <div class="footer-badge">学术研究用途 · Academic Use Only</div>
-</footer>
+## 第九章 输入输出系统
 
-<!-- ═══════════════ SCRIPTS ══════════════════════ -->
+1. 特权与优先级
+1.1 PSR寄存器结构（运行模式/优先级/状态码）
+1.2 超级用户栈与用户栈切换（SSP/USP）
+2. I/O访问机制
+2.1 内存映射I/O vs 专用I/O指令
+2.2 同步I/O vs 异步I/O
+2.3 轮询 vs 中断驱动
+2.4 KBSR/KBDR、DSR/DDR寄存器详解
+3. TRAP与中断
+3.1 TRAP指令机制与陷入向量表
+3.2 常用TRAP服务（GETC/OUT/PUTS/IN/HALT）
+3.3 中断驱动I/O原理与RTI返回机制
+
+## 第十章 数据转换与栈应用
+
+1. ASCII与二进制转换
+1.1 ASCIItoBinary子程序实现
+1.2 BinaryToASCII子程序实现（含符号处理）
+2. 栈在算术运算中的应用
+2.1 零地址机与基于栈的表达式计算
+2.2 表达式求值实例 (A+B)·(C+D)
+3. 全课程总结要点
+3.1 LC-3完整数据通路回顾
+3.2 各章知识点串联（ISA→汇编→I/O→数据结构）
+
+
+## 第一章：计算机系统概述
+
+### 模块1：3分钟速记脑图
+
+```
+第一章(计算机系统概述)
+├─ 系统求解路径(具体→抽象)
+│   ├─ Problem(自然语言,可能模糊)
+│   ├─ Algorithm(有限性/确定性/可计算性)
+│   ├─ Program(高级语言/低级语言)
+│   ├─ ISA(指令集,硬软件分界面)
+│   ├─ Microarchitecture(同一ISA可有不同实现)
+│   ├─ Logic Circuits(门电路组合方式不唯一)
+│   └─ Devices(材料/工艺限制)
+├─ 抽象层次图(9层,自顶向下)
+│   Application→OS/虚拟机→编译器→ISA
+│   →微架构→RTL/门→模拟数字电路→物理器件
+├─ 核心思想(3个)
+│   ├─ 通用性(图灵机→任何问题都可算)
+│   ├─ 层次化(抽象隐藏细节,减少复杂度)
+│   └─ 软硬件结合(互相促进,无绝对最优解)
+└─ 八大设计思想(考试高频列举题)
+    ├─ 面向摩尔定律设计
+    ├─ 抽象简化设计
+    ├─ 加速大概率事件(Amdahl定律★★★计算题)
+    ├─ 并行/流水线/预测 提性能
+    ├─ 存储器层次
+    └─ 冗余提高可靠性
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① ISA（指令集架构）—— 软硬件分界面
+
+课件定义："ISA为机器语言程序员提供了控制机器所需要的所有必要信息，是计算机硬件和软件的分界面"。
+
+人话拆解：ISA就是"程序员和硬件之间的合同"——程序员只需按ISA写指令，不用管底层电路怎么实现；硬件工程师只需保证实现ISA规定的功能，内部怎么设计随意。这就是为什么Intel x86和ARM可以有无数代不同电路实现，但同一段x86机器码能在不同代CPU上跑。
+
+⚠️易错陷阱：很多人把"ISA"和"微架构（Microarchitecture）"混为一谈。ISA是"做什么"（指令语义），微架构是"怎么做"（流水线深度、Cache大小等具体电路组织）。同一个ISA（如x86-64）可以对应Intel和AMD完全不同的微架构实现。
+
+#### ② 算法的三大特性
+
+课件定义："算法特性：1）确定性 2）有效可计算性 3）有限性"（原文见page-31，definiteness, effective computability, finiteness）。
+
+人话拆解：
+
+- 确定性：每一步该做什么必须明确，不能有歧义
+- 有效可计算性：每一步必须是机器能真正执行的操作
+- 有限性：必须能在有限步内结束，不能死循环
+
+⚠️易错陷阱：容易把"有限性"和"程序运行时间短"搞混。有限性只要求"步数有限"，哪怕执行10^100步也算有限，不代表实际可行。
+
+#### ③ 抽象层次（Abstraction Layers）
+
+课件原图（page-39）自顶向下依次为：Application → OS/虚拟机 → Programming Language/编译器 → ISA → Microarchitecture → RTL/门级 → 模拟/数字电路 → Physics。
+
+人话拆解：这是一个"漏斗"，每往下一层都把上层的复杂度压缩成更简单的接口。举例：你在Word里按Ctrl+S保存文件，Word调用OS的文件系统API，OS再翻译成硬盘控制器指令，最终变成磁头的电磁信号——你完全不需要懂磁头怎么工作。
+
+⚠️易错陷阱：课件强调"每一层可以有多种不同实现方式"（page-33举例：同一问题可用高斯消元或Jacobi迭代，同一ISA可在x86/SPARC/PowerPC上实现），考试最爱问"哪两层之间不是一一对应关系"，答案通常是ISA与Microarchitecture（一个ISA↔多个微架构实现）。
+
+#### ④ Amdahl定律（加速大概率事件）—— 计算题必考
+
+课件原文（page-62/63）："设计者必须清楚什么是经常性事件，以及提高这种情况下机器的运行速度对计算机整体性能提高有多大贡献"。
+
+课件例题：浮点功能单元执行性能提高2倍，但仅有10%的浮点指令：
+\$ ExTime_{new} = ExTime_{old} \times (0.9 + 0.1/2) = 0.95 \times ExTime_{old} \$
+\$ Speedup_{overall} = 1 \div 0.95 = 1.053 \$（）
+
+人话拆解：这题的逻辑是"没被优化的90%时间原样不变，被优化的10%时间打对折"。
+
+⚠️易错陷阱（面试/考试超高频坑）：
+
+1. 忘记"未优化部分占比"要保持1不变，直接算成 0.1×2 = 0.2 就错了
+2. 混淆"加速比"和"提升百分比"：加速比1.053≠性能提升5.3倍，是提升5.3%
+3. 当n（并行处理器数）→∞时，极限加速比是 1/(1-a)，很多人会忘记这个上限，以为处理器越多加速比无限大
+
+### 模块3：Amdahl定律计算题"手算模版"
+
+**这是本章唯一的计算题类型，公式记牢：**
+
+$Speedup = \dfrac{1}{(1-F) + F/k}$
+
+其中 F = 可优化部分占比，k = 优化后该部分的加速倍数（或处理器数）。
+
+**标准解题三步：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | 找出"可优化部分占比F" | 题目出现"仅有x%指令/时间涉及…" |
+| Step 2 | 找出"优化倍数k" | 题目出现"性能提高n倍""执行时间缩短为1/n" |
+| Step 3 | 代入公式算ExTime_new，再求Speedup=ExTime_old/ExTime_new | 注意分母是"加"不是"乘" |
+
+**典型例题变式（课件原题+常见变形）：**
+
+原题：浮点单元提速2倍，占比10% → Speedup=1.053
+
+变形1（提速倍数变化）：若浮点单元提速4倍，占比仍10% → ExTime_new=0.9+0.1/4=0.925，Speedup=1.081
+
+变形2（占比变化）：若浮点指令占比提升到50%，其余不变（提速2倍）→ ExTime_new=0.5+0.5/2=0.75，Speedup=1.333
+
+变形3（陷阱题：无限加速）：若浮点单元"无限快"（k→∞），占比仍10% → ExTime_new→0.9，Speedup上限=1/0.9=1.111（这就是"未优化部分卡住整体上限"的核心考点）
+
+### 模块4：高频易错判断题（预测明天可能考）
+
+**Q1（判断题）：** "只要处理器核数足够多，并行程序的加速比可以无限增大。"
+
+**答案：错误。** 根据Amdahl定律，当k→∞时，Speedup的极限是 1/(1-F)，被串行部分卡死了上限，不可能无限增大。这是全网面试/考试最常见的Amdahl定律陷阱题。
+
+**Q2（选择题）：** ISA的作用是：A.决定电路的物理实现方式 B.提供硬件与软件之间的统一接口 C.决定编译器的具体优化算法 D.决定操作系统的调度策略
+
+**答案：B。** 课件明确定义ISA是"硬件和软件的分界面"。
+
+- A错：ISA不管物理实现，那是微架构和电路层的事，同一ISA可有多种电路实现
+- C错：编译器优化算法属于Programming Language/Compiler层，ISA只规定"目标代码长什么样"，不规定"怎么优化生成它"
+- D错：操作系统调度策略是OS层的问题，属于ISA之上的抽象层
+
+**Q3（判断题）：** "算法的'有限性'意味着算法执行时间必须足够短，否则不算合格算法。"
+
+**答案：错误。** 课件定义有限性仅指"步骤数量有限、能够终止"，不涉及时间长短。哪怕一个算法要执行一亿年才能结束，只要它能在有限步内终止，仍满足有限性——只是效率低，效率是另一个独立评价维度（时间/空间复杂度），不能和"有限性"这个基本特性混为一谈。
+
+### 模块5：跨章节串联提示
+
+- **与第四章（冯诺依曼模型）串联**：第一章讲的"ISA是软硬件分界面"，在第四章会具象化为LC-3的具体ISA规范（寄存器、指令格式），考试可能让你先答"ISA的抽象定义"，再让你用LC-3举例说明，属于送分连接题。
+- **与第三章（数字逻辑）串联**：抽象层次图中"Microarchitecture→Logic Circuits"这一跳，对应第三章讲的"用门电路实现加法器/选择器"，如果大题问"体现了什么设计思想"，答案往往是"抽象+层次化"（第一章）+"具体实现是可替换的"（第三章多种加法器实现，如Ripple-carry vs Carry-lookahead）。
+- **与第六章（程序调试）串联**：第一章说"抽象隐藏细节，但细节出问题时必须深入"（那个"拧螺丝值1000美元"的故事），这正是第六章调试思想的理论根源——出题人喜欢让你用第一章的抽象思想解释第六章为什么需要断点调试。
+
+
+## 第二章：数据表示
+
+### 模块1：3分钟速记脑图
+
+```
+第二章(数据表示)
+├─ 进位计数制
+│   ├─ 十进制/二进制/十六进制
+│   ├─ b进制通用公式: a=an-1*b^(n-1)+...+a0*b^0
+│   └─ 进制互转(先转10进制,再转目标进制)
+├─ 信息单位
+│   ├─ bit: n个bit → 2^n种状态
+│   └─ 数值型 vs 非数值型数据(指令编码属于非数值型)
+├─ 负数表示法(3种,重点!)
+│   ├─ 原码: 符号位+数值位分离,0有两种表示(±0)
+│   ├─ 反码: 负数=原码数值位取反,0仍有两种表示
+│   └─ 补码(★核心★):
+│       ├─ 定义: 正数不变,负数=2^(n+1)-|X|
+│       ├─ 0的表示唯一
+│       └─ 符号位可直接参与运算
+└─ 补码运算(★计算题重灾区★)
+    ├─ 公式: [X+Y]补=[X]补+[Y]补
+    ├─ 减法转加法: [X-Y]补=[X]补+[-Y]补
+    └─ 纯小数补码(另一套定义,易混淆)
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 原码、反码、补码——三种编码的本质区别
+
+课件定义（page-12/13/15）：
+
+- 原码：符号位为0表示正，为1表示负，数值部分与真值相同
+- 反码：正数与原码相同，负数的反码是"符号位为1，数值部分按位取反"
+- 补码：\$ X_补 = X (0≤X<2^n) \$ 或 \$ X_补 = 2^{n+1}-|X| (-2^n≤X≤0) \$
+
+人话拆解：原码是"最直观但最难算"的表示（人脑好理解，电路不好算），反码是"过渡产物"，补码才是"电路真正用的"——因为补码能把减法变成加法，硬件只需要一套加法器电路，不用单独设计减法器。
+
+⚠️易错陷阱（课件明确强调，page-15）：原码和反码中"0"都有两种表示形式（+0和-0），只有补码中0的表示是唯一的（00000）。这是判断题最爱考的点——很多人会想"0应该只有一种表示"，但原码/反码恰恰是"违反直觉"的两种表示，一定要背下来。
+
+#### ② 补码的"额外1个负数"陷阱
+
+课件例题（page-15，5比特表示）：补码能表示的最小数是-16，即10000被定义为最小的数。
+
+人话拆解：n位补码表示范围是 $-2^n$ 到 $2^n-1$，注意负数比正数多一个！比如5位补码：正数最大是01111（+15），负数最小是10000（-16），不是-15。这是因为补码的0只占一个编码，省出来的那个编码给了负数。
+
+⚠️易错陷阱（超高频）：很多人计算范围时会对称地写成"-15到+15"，漏掉了"多出来的那一个负数"。这也是很多C语言里"INT_MIN取绝对值会溢出"的底层原因（比如int8_t范围是-128到127，对-128取绝对值理论上是128，但128超出了正数范围，会溢出回-128）——这是计组/CSAPP里的经典陷阱，源头就在这里。
+
+#### ③ 补码加减法运算规则
+
+课件公式（page-18/19）：
+
+$$
+[X+Y]_补=[X]_补+[Y]_补
+$$
+
+$$
+[X-Y]_补 =[X]_补+[-Y]_补
+$$
+
+课件例题（5位表示，n=4，X=9,Y=3）：
+
+- $[X+Y]_补 = 01001+00011=01100$
+- $[X-Y]_补 = 01001+11101=100110$（注意这里出现了6位，需要截断到5位）
+
+人话拆解：减法运算的诀窍是"减一个数=加这个数的负数补码"，负数补码怎么求？把正数补码"取反加1"即可（课件推导：$2^{n+1}-X = (2^{n+1}-1)-X+1$，即"全1减X"再加1，等价于按位取反再加1）。
+
+⚠️易错陷阱：课件例题里$[X-Y]_补$算出了6位结果（100110），但寄存器只有5位，最高位的进位要直接舍弃（这不是溢出，是正常的"进位丢弃"）。很多同学看到多出一位就慌了，误以为一定是溢出——进位丢弃 ≠ 溢出，溢出的判断标准是另一套规则（见模块3）。
+
+### 模块3：补码运算"手算模版"（判断溢出）
+
+**这是本章唯一的高频计算题类型，标准三步法：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | 把两个数都转换成n位补码 | 题目给出"用n位表示" |
+| Step 2 | 按二进制加法逐位相加，标记符号位的进位（Cs）和最高数值位的进位（Cp） | 注意符号位也要参与正常加法 |
+| Step 3 | 判断 Cs⊕Cp（异或）：结果为1则溢出，为0则无溢出（等价于：只有单进位才溢出，双进位/无进位都不溢出） | 关键词"是否溢出""结果是否正确" |
+
+**课件例题变式（用课件原始数据练手）：**
+
+原题：5位补码，X=9()，Y=3()，求X+Y、X-Y、Y-X的补码。
+
+- X+Y=01001+00011=01100（符号位0+0无进位，数值位无进位到符号位→Cs=0,Cp=0→无溢出，结果=12 ✓）
+- X-Y：X+(-Y)=01001+11101=100110→截断为5位00110（丢弃进位）=6 ✓（无溢出，因为丢弃的是双进位，抵消了）
+
+**变形题（面试/考试常出的"两正数相加变负数"陷阱）：**
+
+5位补码：X=+9(01001)，Y=+9(01001)，求X+Y：
+01001+01001=10010（符号位变成1，代表出现负数-14，但两个正数相加不可能是负数）→这就是典型的**正溢出**，判断依据：符号位Cs=0（0+0无进位），最高数值位Cp=1（1+1有进位）→Cs⊕Cp=1→溢出！
+
+**看到什么关键词套什么公式：**
+
+- 看到"求[X+Y]补/[X-Y]补" → 直接套补码加法公式，先求负数的补码再相加
+- 看到"是否溢出/结果是否正确" → 套Cs⊕Cp异或判断法
+- 看到"最小的数是多少/表示范围" → 记住负数比正数多一个（-2^n 到 2^n-1）
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "原码、反码、补码中，0都有唯一的表示形式。"
+
+**答案：错误。** 课件明确指出，原码中 $[+0]_原=00000$，$[-0]_原=10000$；反码中 $[+0]_反=00000$，$[-0]_反=11111$——都是两种表示；只有补码里0的表示是唯一的：$[+0]_补=[-0]_补=00000$。这是本章最基础也最容易在选择题里踩坑的点。
+
+**Q2（选择题）：** n位补码能表示的整数范围是：A. $-2^{n-1}$到$2^{n-1}-1$ B. $-(2^n-1)$到$2^n-1$ C. $-2^n$到$2^n-1$ D. $-2^n$到$2^n$
+
+**答案：C。**（注意课件里n是数值位位数，不含符号位，符号位额外占1位，所以是n+1位总长度表示范围$-2^n$到$2^n-1$）。
+
+- A错：这是常见的"想当然对称范围"，忽略了补码多出的一个负数
+- B错：完全对称范围，是原码/反码的表示"个数"特点（两种0），不是补码的范围
+- D错：补码不可能表示$+2^n$，正数最大只到$2^n-1$
+
+**Q3（判断题）：** "两个操作数只要有一个是负数，补码相加就一定不会发生溢出。"
+
+**答案：错误。** 溢出只可能发生在"正+正"或"负+负"的情况下（同号相加），"一正一负"相加绝对不会溢出，因为结果必然落在两个操作数之间，不会超出表示范围。这道题反过来考，容易被"有一个负数"的表述迷惑，误判为"肯定不溢出"或"可能溢出"，正确理解是：**只有同号相加才可能溢出**，异号相加永远不会溢出。
+
+### 模块5：跨章节串联提示
+
+- **与第五章（LC-3指令集）串联**：第二章讲的补码定点整数表示，正是第五章LC-3唯一支持的数据类型（16位定点补码整数）。大题常见套路：先让你手算一道补码加减法/溢出判断题（第二章），再让你写出对应的LC-3 ADD/AND指令实现（第五章），属于"理论+编程"结合题。
+- **与第十章（数据转换）串联**：第十章的ASCIItoBinary/BinaryToASCII子程序，本质就是"补码整数↔ASCII字符串"的转换算法，如果大题给你一个负数要求转成ASCII输出，必须先判断符号位、转正数（NOT+1，即取反加1），这正是第二章补码求负数的操作在第十章的直接应用。
+- **隐藏坑点**：不少同学会把第二章的"溢出判断"和第五章LC-3的"条件码NZP"搞混——条件码只反映"结果的正负零"，不反映"是否溢出"！LC-3的ADD指令不会自动检测溢出，这是LC-3体系一个被课件多次强调但容易被忽略的设定，如果大题问"LC-3的ADD指令执行后条件码能否判断是否发生了溢出"，标准答案是**不能**。
+
+
+## 第三章：数字逻辑基础
+
+### 模块1：3分钟速记脑图
+
+```
+第三章(数字逻辑基础)
+├─ 硬件层次(从下到上)
+│   晶体管→开关(0/1)→逻辑门(AND/OR/NOT)→逻辑电路(加法器/寄存器)→微处理器
+├─ 晶体管电路基础
+│   ├─ MOS管: n-MOS(高电压闭合) / p-MOS(低电压闭合,互补)
+│   └─ CMOS: n-MOS+p-MOS配对,输出接高电压或GND
+├─ 逻辑门(★组合逻辑核心★)
+│   ├─ 基本门: AND/OR/NOT
+│   ├─ 复合门: NAND/NOR(优先实现,再加反相器得AND/OR)
+│   └─ 摩根定律(★推导题必考★): A+B=A·B ; A·B=A+B
+├─ 组合逻辑 vs 时序逻辑
+│   ├─ 组合逻辑: 输出只由当前输入决定(assign语句)
+│   └─ 时序逻辑: 输出由当前输入+当前状态决定(always@posedge)
+├─ 存储与状态机(★大题高频★)
+│   ├─ 寄存器/内存: 地址译码+字选择+写使能
+│   ├─ 状态图: 现态+输入→次态+输出
+│   └─ 主从锁存器: 分离"现态"和"次态"更新时刻
+└─ LC-3数据通路(承上启下)
+    组合逻辑(译码器/选择器/ALU) + 时序逻辑(状态机/寄存器)
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① CMOS电路——为什么用n-MOS和p-MOS配对
+
+课件定义（page-9）："CMOS特点：在电路中成对使用n-MOS和p-MOS两种晶体管，p-MOS一端连接到高电平，n-MOS一端连接到0电压，电路输出或者通过开关连接到正电压，或者通过开关连接到0电压"。
+
+人话拆解：n-MOS像"低电平才导通的开关"反过来说是"高电平输入时导通"，p-MOS则相反（低电平输入时导通）。两者配对的好处是：任何时刻，输出必然被"拉高"或"拉低"到确定值，不会出现电路悬空（既不通高也不通低）的中间状态，这样才能稳定表示0/1两个逻辑值。
+
+⚠️易错陷阱：很多人搞混n-MOS和p-MOS的导通条件。记忆口诀——n-MOS看"n"想到"need高电压才导通"；p-MOS看"p"想到"path在低电压时导通"。
+
+#### ② 摩根定律——推导题的核心武器
+
+课件公式（page-18）：
+\$ \overline{A+B}=\overline{A}\cdot\overline{B} \$
+\$ \overline{A\cdot B}=\overline{A}+\overline{B} \$
+
+人话拆解："否定的或=各自否定的与；否定的与=各自否定的或"。用人话讲就是"两个人都不喜欢你 = 甲不喜欢你且乙不喜欢你"（对应第一条），"两人不是都喜欢你 = 甲不喜欢或乙不喜欢"（对应第二条）。
+
+课件应用（page-19）：利用AND门+反门实现OR门——先把 $A+B$ 变形为 $\overline{\overline{A}\cdot\overline{B}}$，就可以只用AND和NOT门拼出OR的功能。
+
+⚠️易错陷阱：课件明确留了思考题——"只用NAND门，能实现AND、NOT和OR吗？"（page-20）。答案是**能**，这是数字逻辑最经典的考点："NAND门是万能门（Universal Gate）"。用法：
+
+- NOT：把两个输入接到同一根线上，NAND(A,A)=NOT(A)
+- AND：NAND后面再接一个NAND(当NOT用)
+- OR：先各自NOT，再NAND（摩根定律的直接应用）
+
+#### ③ 组合逻辑 vs 时序逻辑——Verilog两种语句
+
+课件定义（page-31/32/33）：
+
+- 组合逻辑用`assign`语句，例：一位全加器 `assign s=a^b^c; assign cout=a&b|b&c|c&a`
+- 时序逻辑用`always@(posedge clock)`语句，例：D触发器 `always@(posedge C) if(G) Q<=D`
+
+人话拆解：组合逻辑"没有记忆"，输出瞬间跟随输入变化（像开关灯，按下就亮）；时序逻辑"有记忆"，只在时钟跳变（posedge）那一瞬间才更新状态，其余时间保持不变（像照相机只在按快门瞬间记录画面）。
+
+⚠️易错陷阱：初学者常把`=`和`<=`用错。组合逻辑（assign）用`=`，时序逻辑（always块内）必须用`<=`（非阻塞赋值），这是Verilog语法的硬性规定，虽然课件没展开讲，但笔试代码题若涉及Verilog，这是最容易被扣分的细节。
+
+#### ④ 状态机（Finite State Machine）——大题必考的"填表"题
+
+课件定义（page-90）："状态机=组合逻辑电路（决定输出和下一个状态）+存储单元（存储各种状态）"。
+
+课件经典例题（page-88/89）：密码锁状态图，输入序列X=1000010110，从S0开始求状态序列和输出序列——答案：状态序列S1S2S3S0S0S1S2S0S1S2，输出序列0001000100。
+
+⚠️易错陷阱：课件明确提醒"现态"和"次态"是两个不同时刻的概念（page-87：$S_i$在$t_n$时刻是现态，$t_{n+1}$时刻转换到次态$S_j$）。很多人在填状态转换表时，会把"当前时钟周期的输出"和"下一时钟周期的状态"算错行，一定要严格按"现态+输入→（本周期输出，次态）"这个顺序填表，次态要留到下一行才作为新的"现态"。
+
+### 模块3：状态机"手算模版"（填状态转换表）
+
+**看到"状态图/状态转换图+输入序列，求状态序列和输出序列"就套下面的表格法：**
+
+
+| 步骤 | 操作 |
+| :-- | :-- |
+| Step 1 | 画一张表：时刻(0,1,2...) / 输入X / 现态 / 次态 / 输出Z |
+| Step 2 | 从题目给定的初始状态填入t=0的"现态" |
+| Step 3 | 根据状态图，用（现态+当前输入）查找对应的（输出，次态） |
+| Step 4 | 把这一行的"次态"复制到下一行的"现态"，重复Step3直到输入序列结束 |
+
+**课件典型例题（原题，练手用）：**
+
+已知电路现在处于S0，输入序列X=1000010110，套用上表逐行推导（课件page-89给出标准答案表）：
+
+- t=0: X=1, 现态S0, 次态S1, 输出0
+- t=1: X=0, 现态S1, 次态S2, 输出0
+- ……（以此类推）
+- 最终状态序列：S1S2S3S0S0S1S2S0S1S2，输出序列：0001000100
+
+**关键词提示：**
+
+- 看到"密码锁/交通灯/序列检测器" → 一定是状态机题，先画状态图再填表
+- 看到"主从锁存器" → 考的是"两个时钟相位分别做什么"（第一相位：上一次算好的次态变成现态；第二相位：新次态被计算并存入锁存器A）
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "NAND门和NOR门不能单独实现AND、OR、NOT这三种基本逻辑功能，必须配合其他门电路使用。"
+
+**答案：错误。** 课件明确留了思考题证明"只用NAND门就能实现AND、NOT和OR"。这是数字逻辑的经典结论——NAND和NOR都是"万能门"，单独一种就能构
+
+
+## 第四章：冯·诺依曼模型
+
+### 模块1：3分钟速记脑图
+
+```
+第四章(冯诺依曼模型)
+├─ 五大组成部件(★填空题必考★)
+│   运算器 + 控制器 + 存储器 + 输入设备 + 输出设备
+├─ 冯诺依曼机三大特征
+│   ①二进制表示指令和数据
+│   ②存储程序方式(程序存在内存里,自动逐条取出执行)
+│   ③五大部件组成
+├─ 存储器(Memory)
+│   ├─ 2^k × m位存储阵列(k=寻址空间位数,m=寻址能力)
+│   ├─ MAR(内存地址寄存器) / MDR(内存数据寄存器)
+│   └─ LOAD(读)/STORE(写) 三步流程(★手算模版★)
+├─ 处理单元(Processing Unit)
+│   ├─ ALU: 只做+/-/AND/OR/NOT(LC-3仅ADD/AND/NOT)
+│   └─ 通用寄存器: LC-3有8个16位寄存器(R0-R7)
+├─ 控制单元(Control Unit)
+│   ├─ PC(下一条指令地址) / IR(当前指令内容)
+│   └─ 有限状态机FSM: 协调各部件工作
+├─ 输入输出单元
+│   键盘(KBSR/KBDR) / 显示器(DSR/DDR)
+└─ 指令执行六步骤(★★★核心考点★★★)
+    F(取指)→D(译码)→EA(地址计算)→OP(取操作数)→EX(执行)→S(存结果)
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 冯·诺依曼机三大特征——填空题送分点
+
+课件定义（page-3）："⑴计算机应由运算器、控制器、存储器、输入设备和输出设备五大部件组成；⑵计算机中采用二进制来表示指令和数据；⑶采用存储程序方式，计算机能自动逐条取出指令并执行程序"。
+
+人话拆解：这三条的核心是"程序即数据"——指令和数据用同一套二进制编码存在同一个内存里，CPU区分它们靠的不是编码本身不同，而是"当前处于哪个执行阶段"（取指阶段取到的就当指令解释，取操作数阶段取到的就当数据用）。
+
+⚠️易错陷阱：很多同学会误以为"指令和数据在内存里有不同的编码格式区分"，但课件明确强调是**存储程序方式**——两者是一样的二进制串，CPU完全靠"当前指令周期处于哪个阶段"来决定怎么解释这段bit流，这也是冯诺依曼架构和哈佛架构（指令、数据分开存储）的本质区别，容易在选择题里作为对比设坑。
+
+#### ② MAR/MDR——内存读写的"专用中转站"
+
+课件定义（page-6）：
+
+- 读内存（LOAD）：①写内存单元地址(A)到MAR ②发read信号给内存，内存把MAR对应数据送到MDR准备好 ③运算器从MDR读取数据(X)
+- 写内存（STORE）：①将数据(X)写入MDR ②将地址(A)写入MAR ③发write信号给内存
+
+人话拆解：MAR（地址寄存器）永远存"要访问哪个地址"，MDR（数据寄存器）永远存"这个地址对应的数据"。可以把MAR/MDR想象成快递柜的"柜门号输入框"和"取件口"——你先在输入框（MAR）里输入柜号，快递柜把对应格子的东西放到取件口（MDR），你才能真正拿到东西。
+
+⚠️易错陷阱：读和写的操作顺序刚好相反！读是"先给地址→内存把数据放进MDR→CPU读MDR"；写是"先把数据放进MDR→再给地址→内存把MDR的内容写进那个地址"。考试常把顺序打乱让你判断对错，一定要记住"读：地址先行，数据后到；写：数据先行，地址后配"。
+
+#### ③ 指令的两大组成部分——操作码与操作数
+
+课件定义（page-13）："指令由两部分组成：操作码opcode（指示做什么操作）+操作数operands（指示操作对象）"。
+
+人话拆解：操作码就是"动词"（加/减/搬运），操作数就是"名词"（对谁操作）。LC-3的指令字长固定16位，高4位[15:12]是操作码（最多16条指令，2^4=16），剩下12位留给操作数信息。
+
+⚠️易错陷阱：课件特别强调"指令的执行具有原子性"——一条指令一旦开始执行就不能被中断到"执行到一半"的状态（要么完全没执行，要么完整执行完），这是理解后面第九章中断机制的重要前提，很多人会误以为中断可以打断指令内部的某一步。
+
+#### ④ 指令执行六步骤——本章最核心的流程
+
+课件定义（page-17）："Fetch(取指令)→Decode(译码)→Evaluate address(地址计算)→Fetch operands(取操作数)→Execute(执行)→Store result(存放结果)"。
+
+课件总结（page-41）明确指出："并不是所有的指令执行都需要六个步骤完成，每一个步骤的执行时间也可能不同"。
+
+人话拆解：这六步是"理论上的最大流程"，不同指令类型走的步骤不同：
+
+- 计算型指令（ADD/AND）：操作数在寄存器里，通常不需要EA（地址计算）这一步
+- 数据搬移指令（LD/ST）：需要EA计算内存地址，还需要访存（OP或S）
+- 控制指令（JMP/BR）：可能在D阶段就直接改写PC，不需要OP/EX/S
+
+⚠️易错陷阱（超高频）：很多人以为"所有指令都要完整走六步"，但课件明确否定了这一点。考试常出："某条指令是否需要EA阶段？"——判断依据是**该指令是否需要访问内存**，纯寄存器运算（如ADD R1,R2,R3）完全不需要EA，直接从D跳到EX。
+
+### 模块3："取指-译码-执行"手算模版
+
+**看到"分析某条LC-3指令经过哪些阶段"就套下面的判断法：**
+
+
+| 步骤 | 判断依据 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | F(取指)+D(译码) | 每条指令必须经过，无一例外 |
+| Step 2 | 是否需要EA(地址计算) | 指令中含有内存地址偏移（LD/ST/LDR/STR/LEA等）才需要 |
+| Step 3 | 是否需要OP(取操作数) | 操作数在内存中才需要（如LDR要先算地址再读内存） |
+| Step 4 | EX(执行) | 只要涉及ALU运算（ADD/AND/NOT）或PC改写就需要 |
+| Step 5 | 是否需要S(存结果) | 结果要写回内存才需要（如ST/STR），写回寄存器不算S阶段 |
+
+**典型例题变式：**
+
+- ADD R1,R2,R3（寄存器运算）→ F,D,EX（三步，无EA/OP/S）
+- LD R1,LABEL（PC相对寻址读内存）→ F,D,EA,OP,S（EA算地址，OP从内存取数据放入DR，是否单独算存储要看具体实现，但明确需要访存）
+- ST R1,LABEL（写内存）→ F,D,EA,S（不需要OP，因为不是读取操作数，而是把寄存器值存出去）
+- BR（条件分支）→ F,D（若不满足条件，直接结束；若满足，D阶段可能就直接算出新PC，不需要OP/EX/S）
+
+**关键词提示：**
+
+- 看到"某条指令需要几个阶段" → 先判断"访存类型"（读/写/无访存），再套用上表
+- 看到"MAR/MDR的值分别是什么" → 严格按LOAD/STORE三步顺序模拟
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "冯诺依曼架构中，CPU通过检查内存中数据的二进制编码格式，就能判断这段数据是指令还是普通数据。"
+
+**答案：错误。** 课件强调的是"存储程序方式"，指令和数据用完全相同的二进制编码规则存放在同一个内存空间里，CPU完全无法从编码本身区分两者，唯一的判断依据是"当前处于指令周期的哪个阶段"——如果PC指向这个地址并处于取指阶段，就当指令解释；如果是在执行阶段访问的地址，就当数据用。这是冯诺依曼架构最容易被误解的特征，也是与哈佛架构对比的经典考点。
+
+**Q2（选择题）：** 下列哪条LC-3指令**不需要**EA（地址计算）阶段？A. LD R1,LABEL B. ST R2,LABEL C. ADD R1,R2,R3 D. LDR R1,R2,\#5
+
+**答案：C。** ADD是纯寄存器运算指令，操作数和结果都在寄存器中，完全不涉及内存地址计算。
+
+- A错：LD需要用PC相对寻址计算内存地址，属于EA阶段
+- B错：ST同样需要计算写入地址
+- D错：LDR用"基址寄存器+偏移"计算地址，明确需要EA
+
+**Q3（判断题）：** "指令执行过程中，如果外部设备发出中断请求，CPU可以在任意时刻立即响应，暂停当前指令的执行。"
+
+**答案：错误。** 课件明确指出"指令的执行具有原子性"，中断只能发生在一条指令**执行完毕之后**（即下一个取指周期开始前），不能打断某条指令内部正在进行的EA/OP/EX/S任一阶段。这个知识点会在第九章中断驱动I/O中被反复验证，是跨章节常考的连接点。
+
+### 模块5：跨章节串联提示
+
+- **与第五章（LC-3指令集）串联**：本章讲的是"指令执行的抽象六步骤"，第五章会把每一步具象成LC-3每条具体指令（ADD/LD/BR等）的详细数据流图。大题常见套路：先让你判断某条指令走哪几个阶段（第四章），再让你写出这条指令的16位二进制编码（第五章），是最常见的组合大题。
+- **与第三章（数字逻辑）串联**：本章的"控制单元FSM"正是第三章状态机理论的直接应用——课件page-39的LC-3完整状态机图，就是用第三章讲的"现态+输入→次态+输出"逻辑实现的，如果大题给你LC-3状态机图，本质就是在考第三章的状态机读图能力。
+- **隐藏考点**：第四章反复强调"LC-3只有ADD/AND/NOT三种ALU运算"，这个限制会在第五章"如何用这三种指令实现减法/OR/清零/复制寄存器"的构造题中被直接考察（第五章page-11明确留了这几个思考题），如果第四章这里没吃透ALU的能力边界，第五章的构造题会很难下手。
+
+
+## 第五章：LC-3指令集结构（ISA）
+
+### 模块1：3分钟速记脑图
+
+```
+第五章(LC-3指令集结构ISA)
+├─ ISA三大要素
+│   ├─ 内存组织: 216寻址空间,16位寻址能力
+│   ├─ 寄存器组: 8个通用寄存器R0-R7,均16位
+│   └─ 指令集: 操作码+数据类型+寻址模式
+├─ 15个操作码(3大类)
+│   ├─ 运算指令: ADD/AND/NOT(仅这3种!)
+│   ├─ 数据搬移: LD/LDI/LDR/LEA/ST/STR/STI
+│   └─ 控制指令: BR/JSR/JSRR/JMP/RTI/TRAP
+├─ 条件码NZP(★核心★)
+│   ├─ 只有写寄存器的指令才会更新(ADD/AND/NOT/LD/LDR/LDI/LEA)
+│   ├─ ST/STR/STI/控制指令 不改变条件码
+│   └─ 同一时刻只有一个标志位为1
+├─ 寻址方式(5种,★手算高频★)
+│   ├─ 非内存寻址: 立即数寻址 / 寄存器寻址
+│   └─ 内存寻址: PC相对(LD/ST/LEA,±255) / 间接(LDI/STI) / 基址+偏移(LDR/STR,±31)
+├─ 运算指令构造技巧
+│   减法=加负数 / OR用摩根定律转AND+NOT / 清零用AND#0 / 复制用ADD#0
+└─ 控制指令
+    ├─ BR: 条件跳转,PC相对寻址,±255范围
+    ├─ JMP: 绝对跳转(用寄存器存目标地址)
+    └─ TRAP: 调用系统服务子程序(x20-x25等)
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① ISA三大要素——填空题送分点
+
+课件定义（page-4）："ISA=向以机器语言编程的程序员提供有关控制机器所需要的所有必要信息，包括内存组织方式、寄存器组、指令集等信息"。
+
+人话拆解：记这三要素就像记一台机器的"说明书"——内存组织回答"能存多少东西"，寄存器组回答"CPU内部有几个临时抽屉"，指令集回答"CPU能做哪些动作"。LC-3的具体参数：寻址空间2^16个单元，每个单元16bit，8个通用寄存器（R0-R7）。
+
+⚠️易错陷阱：寄存器编号需要多少位二进制？课件留了这个思考题（page-5）——8个寄存器，log2(8)=3位即可编码，这个"3位"会在后面每条指令的二进制格式题里反复出现（每个寄存器字段永远占3 bits），是最容易漏算的细节。
+
+#### ② 条件码NZP——只由"写寄存器"指令触发
+
+课件定义（page-6/26）："目的操作数为寄存器的指令会根据写入寄存器的值设置条件码：N=写入值为负，Z=写入值为零，P=写入值为正"，"任何一条写寄存器的指令都会改变条件码(ADD, AND, NOT, LD, LDR, LDI, LEA)，Store指令和控制指令不改变条件码"。
+
+人话拆解：判断一条指令是否影响NZP，只需问一句——"这条指令的结果有没有写入某个寄存器？"有写入（哪怕写入的是地址，比如LEA）就会更新条件码；没有写入寄存器（ST/STR/STI是往内存写，JMP/BR是改PC不改通用寄存器）就绝对不会更新。
+
+⚠️易错陷阱（超高频）：很多人误以为LEA不影响条件码，理由是"LEA只是算地址，没有真正的算术运算"，但课件明确把LEA列入会设置条件码的指令名单！因为LEA本质上是"把计算结果（哪怕是地址）写入了目的寄存器"，只要写寄存器就触发NZP更新，这是判断题的经典送分陷阱。
+
+#### ③ PC相对寻址——为什么只能访问±255范围
+
+课件定义（page-13）："LC-3指令长度16位，内存地址长度16位。16位指令中操作码占4bits，一个目的寄存器占3bits，只剩9位来编码地址了...利用PC寄存器，剩下的9bits用来表示数据地址和PC的偏移量(offset,[-256,255])"。
+
+人话拆解：16位指令根本装不下一个完整的16位地址（扣掉操作码4位、寄存器3位，只剩9位），所以LC-3耍了个聪明的办法——不存"绝对地址"，只存"和下一条指令（PC）的相对距离"。9位补码能表示的范围是-256到+255。
+
+⚠️易错陷阱（超高频，课件反复强调）：这里的PC**不是当前指令的地址**，而是**下一条要执行指令的地址**（因为取指阶段已经完成PC+1）！课件在page-13、page-24、page-28都反复强调这一点。做手算题时，如果直接拿"当前指令地址"去加offset，答案一定算错。
+
+#### ④ 三种内存寻址模式对比——选择题高频
+
+
+| 寻址模式 | 对应指令 | 有效地址计算 | 偏移范围 |
+| :-- | :-- | :-- | :-- |
+| PC相对寻址 | LD/ST/LEA | PC + offset9 | ±255（9位补码） |
+| 基址+偏移寻址 | LDR/STR | BaseR + offset6 | ±31（6位补码） |
+| 间接寻址 | LDI/STI | M[PC + offset9] | 先9位定位，再取出的值当地址 |
+
+课件原文（page-16/19）："LDI利用间接寻址，在PC相对寻址能访问到的内存单元存放一个16位地址（不是数据了），先读取这个地址，然后以这个地址去访问内存，类似C语言的指针"；"LDR类似C语言的数组，int a; *(a+2)"。
+
+⚠️易错陷阱：LDI是"两次访存"（先读地址，再用这个地址读数据），LD是"一次访存"（直接读数据）。很多人容易漏掉LDI的"二次跳转"这一步，直接把offset算出的地址当成数据地址来用，这是错的——那个地址存的是"另一个地址"，还要再解引用一次。
+
+### 模块3：指令二进制编码"手算模版"（本章最核心的计算题）
+
+**看到"写出XX指令的16位二进制编码"就套下面的标准流程：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | 确定操作码（4 bits），查表填入[15:12] | ADD=0001, AND=0101, NOT=1001, LD=0010, ST=0011, LDR=0110, STR=0111, LEA=1110, BR=0000 |
+| Step 2 | 填目的/源寄存器编号（3 bits each） | 每个寄存器固定3位二进制 |
+| Step 3 | 判断是寄存器模式还是立即数模式（ADD/AND） | 第5位为0=寄存器模式；为1=立即数模式，后5位是补码立即数 |
+| Step 4 | 若涉及内存访问，计算offset并转成对应位数的补码填入低位 | PC相对9位/基址+偏移6位 |
+
+**课件典型例题（page-24原题）：**
+
+`LEA R1,label`（label地址=PC-3=x30F4）：编码为`1110 001 111111101`，即R1←PC+(-3)。
+
+**变形题（面试常考"从二进制反推指令含义"）：**
+
+给定编码 `0001 001 010 000 011`，如何解读？
+
+- Step1：[15:12]=0001→ADD
+- Step2：[11:9]=001→DR=R1；[8:6]=010→SR1=R2
+- Step3：第5位=0→寄存器模式；[2:0]=011→SR2=R3
+- 结论：`ADD R1,R2,R3`
+
+**关键词提示：**
+
+- 看到"用立即数模式" → 第5位填1，操作数只有5位（范围-16到+15）
+- 看到"PC相对寻址计算偏移" → 用（目标地址-PC值）,注意PC已经是"下一条指令地址"
+- 看到"用ADD/AND/NOT实现减法/OR/清零" → 减法=NOT+ADD\#1再ADD；OR用摩根定律转换；清零用AND\#0
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "LEA指令只是计算地址，不会改变条件码NZP。"
+
+**答案：错误。** 课件明确把LEA列入会更新条件码的指令清单（因为LEA把结果写入了目的寄存器）。这是本章判断题最容易踩的坑，很多人凭直觉认为"LEA没有真正运算"所以不影响条件码，但判断标准只有一个——"是否写寄存器"，与是否有算术运算无关。
+
+**Q2（选择题）：** 若某条BR指令位于地址x3050，欲跳转到x3200，请问该跳转是否可行？A.可行，直接编码即可 B.不可行，超出PC相对寻址范围 C.可行，但需要用LDI辅助 D.不可行，BR指令不支持跳转超过±255
+
+**答案：B。** x3200-x3053(PC值，注意是x3050+3的下一条指令地址)=0x1AD=429，远超9位补码±255的范围，无法直接用BR跳转。
+
+- A错：直接编码会导致offset位数溢出，编译器会报错（课件page-31明确列出这种典型汇编错误："标号对应的地址相距指令太远，超过了PC相对寻址范围"）
+- C错：LDI是用来处理数据访问超范围的场景，不能直接辅助BR这种控制转移指令
+- D错：说法本身没错但缺少具体原因分析，不如B准确
+
+**Q3（判断题）：** "LC-3只支持ADD、AND、NOT三种运算指令，所以无法用LC-3程序实现减法和逻辑OR运算。"
+
+**答案：错误。** 课件明确留了构造性思考题，减法可以通过"先对减数取负（NOT+ADD\#1），再执行ADD"实现；OR运算可以通过摩根定律 $A+B=\overline{\overline{A}\cdot\overline{B}}$ 转换成"两次NOT+一次AND+一次NOT"来实现。这是"指令集精简≠功能受限"的经典考点，ISA设计的哲学就是"用最少的基本指令组合出任意复杂功能"。
+
+### 模块5：跨章节串联提示
+
+- **与第四章（冯诺依曼模型）串联**：第四章讲的"指令执行六步骤F→D→EA→OP→EX→S"，在第五章会具体化为每条指令走哪几步——比如判断LDR要走哪几个阶段，本质就是在结合第四章的抽象流程和第五章的具体寻址模式。
+- **与第七章（汇编语言）串联**：本章手算的16位二进制编码，正是第七章"汇编器两遍扫描"要自动完成的工作。大题常见套路：先给你一段汇编代码，让你手算每行对应的机器码（第五章），再问"如果标号地址计算超出PC相对寻址范围会发生什么汇编错误"（第七章page-31明确列出这个错误类型）。
+- **隐藏考点（跨章拉满难度）**：第五章的PC相对寻址±255限制，会在第六章"程序设计三种基本结构"中直接影响到——如果一个if/while分支的目标地址距离太远，程序员必须借助JMP绝对跳转来规避范围限制，这是第六章page-12明确假设"所有子任务偏移都在PC相对寻址范围内"的前提条件，如果这个前提不成立，写法就要完全改变。
+
+
+## 第六章：程序设计与调试
+
+### 模块1：3分钟速记脑图
+
+```
+第六章(程序设计与调试)
+├─ 问题求解流程
+│   问题描述(自然语言,可能模糊)→算法(有限/确定/可计算)→程序(LC-3机器码)
+├─ 系统分解原则
+│   大任务→拆小任务→拆到能直接编程实现
+├─ 三种基本执行结构(★与LC-3映射★)
+│   ├─ 顺序结构: 天然支持,无需特殊指令
+│   ├─ 条件结构: 先算条件码NZP,再用BR跳转
+│   └─ 循环结构: BR配合"跳回"实现(while/do-while/for)
+├─ 自然语言↔程序结构映射(★填空题必考★)
+│   "先做A再做B"→顺序 / "如果G则H"→条件 / "对每个X做Y"→循环 / "做Z直到W"→循环
+├─ 高级语言→LC-3代码转换(★大题核心★)
+│   if / while / do-while / for 四种结构标准模版
+└─ 程序调试(★手算追踪题必考★)
+    ├─ 错误分类: 语法错误(易查) vs 逻辑错误(难查) vs 数据错误(难查)
+    ├─ 调试手段: 断点(定位快) / 单步(冗长但精确) / 监视点(不知何时变化时用)
+    └─ 经典bug案例: 地址vs数据混淆(LD/LEA)、分支条件设错、死循环
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 系统分解——把大问题拆到能编程的粒度
+
+课件定义（page-4）："系统分解：利用计算机编程求解复杂问题的一个重要方法。原则：将一个复杂的任务分解成若干个子任务；再将每个子任务进一步分解成更小的任务；如此反复，直到任务小到方便编程实现"。
+
+人话拆解：这就是"分而治之"思想在编程里的应用——不要指望一步写出完整程序，而是先画大框架（比如"读输入→处理→输出"三块），再把每一块继续拆细，直到每一小块都能直接对应几条LC-3指令。
+
+⚠️易错陷阱：课件强调"子任务的实现结构只有三种：顺序、条件、循环"。很多同学写伪代码时会想引入更复杂的结构，但LC-3层面永远可以还原成这三种基本模式的组合，考试如果让你画流程图，一定要能对应到这三种结构之一。
+
+#### ② 自然语言→程序结构的标准映射——判断题送分点
+
+课件明确给出（page-9）四组对应关系：
+
+- "先做A然后做B" → 顺序结构
+- "如果G成立，则做H" → 条件结构
+- "对每一个存在的X，做Y" → 循环结构
+- "做Z直到W成立" → 循环结构
+
+人话拆解：后两条都是循环，但触发方式不同——"对每个X做Y"对应for循环（已知循环次数/范围），"做Z直到W成立"对应while/do-while（不确定循环次数，靠条件判断退出）。
+
+⚠️易错陷阱：课件专门给了if/while/do-while/for四种结构的LC-3实现对照（page-14~17），要注意do-while和while的关键区别——do-while**先执行一次循环体，再判断条件**，而while是**先判断再执行**。课件例题（page-16）的do-while实现中，第一次判断被安排在循环体执行之后（`repeat:`标签放在判断之前），这是最容易在"if/while/for改写成do-while"这类变形题里搞混的地方。
+
+#### ③ 语法错误 vs 逻辑错误 vs 数据错误——三种bug如何区分
+
+课件定义（page-26/27）：
+
+- 语法错误：输入错误造成的非法操作，在机器语言级别很少发生，高级语言容易发生，编译器会报错提示，比较容易修正
+- 逻辑错误：程序没有语法错误，能编译执行，但结果不正确，需要调试器跟踪，比较难修正
+- 数据错误：输入为某些特定数据组合时运行不正常，程序员没考虑周全，需要用大量不同数据集测试，比较难修正
+
+人话拆解：语法错误是"电脑看不懂你写的话"，逻辑错误是"电脑听懂了但你的思路本身有问题"，数据错误是"思路对，但漏考虑了某些极端输入（比如全0、全1、空输入）"。
+
+⚠️易错陷阱：机器语言级别的编程，语法错误反而很少（比如把操作码0010写成0011，这仍是合法编码，只是变成了另一条指令，不会报错），这和写高级语言（漏个分号编译器直接报错）完全不同——机器语言更容易把"语法错误"伪装成"逻辑错误"，因为写错的指令依然能"正常"执行，只是执行的不是你想要的那条指令。这是选择题里常设的对比陷阱。
+
+#### ④ 断点、单步、监视点——三种调试手段的选择逻辑
+
+课件定义（page-28）：
+
+- 断点：执行到特定指令时终止程序，"对具体某个怀疑的点进行测试和观察，定位速度比较快，当你的怀疑是正确的"
+- 单步：每次执行一条指令，"冗长乏味的，但是非常有效"
+- 监视点：检测寄存器或内存值发生变化或达到某个特定值时停止，"在你不知道什么时候或什么地点值会发生变化时特别有用"
+
+人话拆解：三者的选择逻辑是"你对bug位置的确定程度"——已经**强烈怀疑**某一行有问题→用断点直接跳到那；**完全不确定**哪里出问题→老老实实单步走一遍；**知道是哪个变量出问题，但不知道何时被改坏**→用监视点盯着那个变量。
+
+### 模块3：程序追踪调试"手算模版"（大题必考）
+
+**看到"给出一段LC-3代码+初始数据，追踪寄存器/内存变化，找出bug"就套下面的标准流程：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | 画表格：PC / 涉及的寄存器 / 涉及的内存单元，一行代表一条指令执行后的状态 | 题目给"单步调试"或"寄存器初值" |
+| Step 2 | 严格按指令语义逐条更新表格，尤其注意LD和LEA的区别（LD取的是内存里的值，LEA取的是地址本身） | 出现"结果比预期少/多"→先查是不是弄混了地址和数据 |
+| Step 3 | 若出现循环次数与预期不符，重点检查"分支跳转的条件码来源"——是不是用了上上条指令设置的条件码，而不是最近一条 | 关键词"循环次数超出预期""提前退出/未退出" |
+| Step 4 | 若发现死循环，检查退出条件对应的分支目标是否正确指向HALT或循环外 | 关键词"程序无法结束""一直循环" |
+
+**课件典型例题变式（原题练手，page-29/30）：**
+
+R4=10，R5=3做乘法（累加），代码逐条执行后期望R2=30，但实际得到R2=40。用单步调试追踪发现：R5递减到0时循环还多执行了一次，原因是x3203处的分支条件设置错误（应该在R5递减为0时立即退出，但条件判断用错了时机）。
+
+**关键词提示：**
+
+- "结果比预期偏大/偏小固定倍数" → 检查循环多跑/少跑了几次，对照分支条件
+- "取到的值明显不对（比如取到很大的数）" → 检查是否把LD和LEA搞混（LD取值,LEA取地址）
+- "程序卡住不动" → 死循环，检查跳出条件对应的分支指令目标地址
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "在机器语言编程中，语法错误和逻辑错误一样常见，因为CPU无法判断指令是否符合程序员意图。"
+
+**答案：正确（但要理解课件真实含义）。** 课件明确指出"语法错误在机器语言级别很少发生"，但真正的坑在于：机器语言里"合法但错误"的编码（比如操作码打错但仍是一条合法指令）不会被判定为语法错误，而是会表现成逻辑错误——因为CPU执行的每一条二进制编码本身都"合法"，只是不是程序员想要的那条。所以严格按课件说法，这道题的表述其实是**错误**的：语法错误在机器语言级别确实很少见，这正是机器语言调试比高级语言调试更困难的原因之一。
+
+**Q2（选择题）：** 下列哪种调试手段最适合"完全不知道bug出现在程序哪个位置"的情况？A. 断点 B. 单步 C. 监视点 D. 直接读代码猜测
+
+**答案：B。** 课件明确说单步"冗长乏味但非常有效"，适合从头开始逐条验证。
+
+- A错：断点需要你已经"怀疑"某个具体位置，完全不知道位置时无从下断点
+- C错：监视点适合"知道是哪个变量但不知道何时变化"的场景，前提是你已经锁定了变量
+- D错："猜测"不是系统化的调试方法，课件强调的是系统性追踪，不是猜
+
+**Q3（判断题）：** "只要程序在有限步内执行完毕并输出了结果，就说明程序逻辑一定正确。"
+
+**答案：错误。** 课件的数据错误分类明确指出，程序可能在大多数输入下正常运行，但在特定数据组合下出错（比如恰好等于0、恰好是边界值），课件建议"用大量不同的数据集进行程序测试"，并给出实例——判断是否包含数字1的程序，如果测试数据里没有覆盖"最后一位才出现1"或者"完全没有1"这类边界情况，即使程序跑完了也可能藏着bug（如page-36那个"检查数据为0时死循环"的经典陷阱案例）。
+
+### 模块5：跨章节串联提示
+
+- **与第五章（LC-3指令集）串联**：本章if/while/for的代码模版完全建立在第五章BR指令+条件码NZP的基础上。大题常见套路：先给你一段C伪代码，让你套用本章模版翻译成LC-3汇编（第六章），再要求你手算每条指令的16位编码（第五章），是最典型的"从高级语言到机器码"综合大题。
+- **与第一章（抽象层次）串联**：本章反复出现的"具体到抽象再回到具体"调试哲学，正是第一章"抽象简化设计"思想的实操版本——第一章讲的是理念（不用管细节，除非出问题），第六章讲的是具体怎么在出问题时"深入细节找bug"，这两章结合出简答题的概率很高（问你"为什么调试需要深入底层细节，这与抽象设计的理念是否矛盾"）。
+- **隐藏考点**：课件page-30/32/34/36给出的四个调试实例，全部围绕"地址vs数据混淆""条件码来源错误""死循环"三类经典bug——这几类bug在第七章（汇编语言）的程序设计题里会再次出现（比如.FILL和.BLKW用错导致的地址错位），如果这里没吃透，第七章写汇编程序时容易重蹈覆辙。
+
+
+## 第七章：汇编语言
+
+### 模块1：3分钟速记脑图
+
+```
+第七章(汇编语言)
+├─ 语言层次
+│   机器语言(0/1)→汇编语言(助记符,一一对应机器码)→高级语言(一句可能对应多条机器码)
+├─ 汇编器(Assembler)
+│   与ISA强相关,负责符号→机器指令转换
+├─ 程序组成
+│   ├─ 可执行机器指令
+│   ├─ 伪操作指令(指导汇编工作,不产生机器码,以'.'开头)
+│   └─ 注释(';'开始)
+├─ 指令格式
+│   LABEL  OPCODE  OPERANDS  ;COMMENTS (标号可选,操作码操作数必须)
+├─ 伪操作指令(★背诵题必考★)
+│   .ORIG(起始地址,只能1个) / .END(结束,不停止程序)
+│   .BLKW n(分配n个字) / .FILL n(分配1个字并初始化)
+│   .STRINGZ(字符串,自动加'\0',占n+1个单元)
+├─ 数据类型(仅2种)
+│   定点整数(16位补码) / 字符(16位,高位零扩展,实际只用8位)
+└─ 汇编过程(★两遍扫描,计算题核心★)
+    第一遍: 扫描找标号,建符号表(LC计数器逐行累加)
+    第二遍: 查符号表,把每条指令翻译成机器码
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 汇编语言的定位——"友好度"与"控制力"的权衡
+
+课件定义（page-2）："汇编语言：为了让编程过程更加友好，与人类自然语言不对应；保留细节控制能力，ISA相关；一条汇编语句通常对应一条机器语言指令；一条高级语句可能翻译成多条机器语言指令"。
+
+人话拆解：汇编语言是"机器语言的马甲"——本质上还是逐条对应机器指令，只是用好记的符号（ADD、LD）代替了0101这种二进制串，程序员不用死记二进制编码，但仍然要精确控制每一条指令，这和C/Java这种"一句顶多句机器码"的高级语言完全不同。
+
+⚠️易错陷阱：很多人以为"汇编语言与ISA无关，是通用的"，但课件明确强调"汇编器是和机器的ISA相关的"——LC-3汇编语言只能用于LC-3这套ISA，换一个ISA（比如x86）汇编语法完全不同，这与"高级语言一次编写、多平台编译运行"的可移植性形成鲜明对比。
+
+#### ② 伪操作指令——不产生机器码的"施工指令"
+
+课件定义（page-13）："伪操作，更标准的名字：汇编指令(assembler directive)，不对程序产生效果，不是执行指令，仅供汇编器使用，区别于指令，以'.'开始"。
+
+课件完整清单（page-13）：
+
+
+| 伪操作 | 含义 |
+| :-- | :-- |
+| .ORIG address | 指示程序起始地址 |
+| .END | 指示程序在此结束（注意：不停止程序运行！） |
+| .BLKW n | 分配n个字的内存单元空间 |
+| .FILL n | 分配一个字的内存单元并初始化为n |
+| .STRINGZ n-character string | 定义大小为n的字符串，占用n+1个内存单元，第n+1个字符为'\0' |
+
+人话拆解：伪操作就像"建筑图纸上的标注"（比如"此处留空10米"），本身不是building的一部分，只是告诉施工队（汇编器）怎么安排空间。
+
+⚠️易错陷阱（超高频）：".END伪操作只是告诉编译器程序**代码写到这里为止**，并不是让程序**运行**到这里就停止！"。真正让程序停止运行的是HALT指令（或TRAP x25），这是判断题的经典送分陷阱——很多人把"程序编译结束"和"程序运行结束"这两个完全不同的概念搞混。
+
+#### ③ 两遍扫描（Two-Pass Assembly）——本章最核心的计算逻辑
+
+课件定义（page-29/30）："第一遍(First Pass)：创建符号表——扫描源程序文件，找到所有的标号，并计算对应的地址，产生所谓的符号表（symbol table）；第二遍(Second Pass)：生成机器语言程序代码——利用符号表信息将指令转化为机器语言代码"。
+
+第一遍详细流程（page-30）：
+
+1. 找到.ORIG伪操作确定第一条指令的起始汇编地址，初始化LC（location counter，地址跟踪计数器）
+2. 依次扫描每一行代码：若有标号，将标号和对应LC地址存入符号表；LC+1（若碰到.BLKW/.STRINGZ则LC增量为分配的字数，空行不处理）
+3. 碰到.END伪操作则停止汇编过程
+
+人话拆解：为什么要扫描两遍？因为汇编语言允许"前面的指令跳转到后面还没写到的标号"（比如向前跳转的循环），第一遍扫描的唯一目的就是**先把所有标号的地址都摸清楚**，做成一张"地址查询表"，这样第二遍翻译指令时，遇到任何标号都能立刻查表算出偏移量，不需要"边翻译边等后面的代码出现"。
+
+⚠️易错陷阱：LC计数器的增量规则不是"每行+1"，而是"每个内存单元+1"——遇到`.BLKW 3`，LC要一次性加3，不是加1！这是手算符号表时最容易漏算导致后续所有地址集体错位的关键点。
+
+#### ④ 常见汇编错误——第二遍扫描时才会暴露的问题
+
+课件定义（page-31）三类错误："操作数个数或类型不对（如NOT R1,\#7这种非法用法）；立即数的范围太大（如ADD R1,R2,\#1023超出5位立即数范围）；标号对应的地址相距指令太远，超过了PC相对寻址的范围（-256~+255）"。
+
+⚠️易错陷阱：这三类错误全部是在**第二遍扫描**（生成机器码阶段）才会被发现的，第一遍扫描只管建符号表，不检查指令合法性——这是判断"错误发生在哪个阶段"类题目的关键依据。
+
+### 模块3：符号表与机器码"手算模版"（本章计算题核心）
+
+**看到"给出一段LC-3汇编代码，构建符号表并翻译成机器码"就套下面的标准流程：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1(第一遍) | 从.ORIG读取起始地址，初始化LC | 找到.ORIG xXXXX |
+| Step 2(第一遍) | 逐行扫描：有标号则记录(标号,当前LC)到符号表；LC按该行占用的字数递增(一般指令+1，.BLKW n加n，.STRINGZ n加n+1) | 注意.BLKW/.STRINGZ的特殊增量 |
+| Step 3(第一遍结束) | 遇到.END停止，符号表建好 | — |
+| Step 4(第二遍) | 逐条指令翻译：操作码查表填高4位，寄存器编号3位，若操作数含标号则用(目标地址-PC)算偏移量再填入 | 记住PC是"下一条指令地址" |
+
+**课件典型例题（page-32/33/34原题，六乘法程序）：**
+
+```
+.ORIG x3050
+LD  R1, SIX
+LD  R2, NUMBER
+AND R3, R3, #0
+AGAIN ADD R3, R3, R2
+      ADD R1, R1, #-1
+      BRp AGAIN
+      HALT
+NUMBER .BLKW 1
+SIX    .FILL x0006
+.END
+```
+
+第一遍扫描结果符号表：AGAIN=x3053, NUMBER=x3057, SIX=x3058（注意NUMBER和SIX虽然写在HALT之后，但因为是数据定义，各占1个字，紧跟在x3056(HALT)后面依次排列）。
+
+第二遍扫描：比如x3050处`LD R1,SIX`，SIX地址x3058，PC=x3051（下一条指令地址），偏移=x3058-x3051=7，编码为`0010 001 000000111`。
+
+**关键词提示：**
+
+- 看到"求符号表" → 严格按第一遍扫描规则逐行累加LC，特别注意.BLKW/.STRINGZ的字数
+- 看到"求某条指令的机器码" → 先查符号表拿到目标地址，再用（目标地址-PC）算偏移量，PC=当前指令地址+1
+- 看到"该汇编代码是否合法" → 检查立即数范围、操作数个数、PC相对偏移范围三类典型错误
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** ".END伪操作的作用是让程序运行到这里就停止执行。"
+
+**答案：错误。** 课件明确指出".END告诉编译器程序结束的地点，一个程序只允许一个.END，编译器在此停止编译，但不真正停止程序"。真正停止程序运行必须用HALT指令（本质是TRAP x25）。这是本章判断题的头号送分陷阱。
+
+**Q2（选择题）：** 在两遍扫描汇编过程中，"检测立即数范围是否超出限制"这一错误检查发生在哪个阶段？A. 第一遍扫描 B. 第二遍扫描 C. 两遍都会检查 D. 汇编器不做此项检查
+
+**答案：B。** 课件明确将"立即数的范围太大"列为第二遍扫描（生成机器语言代码）时才会暴露的错误类型。
+
+- A错：第一遍扫描只负责建符号表（标号→地址），不检查指令操作数是否合法
+- C错：这类合法性检查只在真正翻译成机器码时才有意义，第一遍不涉及
+- D错：课件明确列出了这类检查机制存在
+
+**Q3（判断题）：** "汇编语言完全独立于具体的ISA，一份LC-3汇编程序可以不加修改地在x86处理器上运行。"
+
+**答案：错误。** 课件反复强调"汇编器是和机器的ISA是相关的：符号与指令集定义的指令保持相应的一致性"。LC-3的ADD、AND、BR等助记符是专属于LC-3 ISA的，x86有自己完全不同的指令集和汇编语法（如MOV、JMP等），LC-3汇编代码换到x86上无法直接运行。⚠️与通用教材差异标注：CSAPP等教材里讨论的"链接、符号表"概念更加复杂（涉及静态库、动态链接、多个.o文件合并），而你的课件里的"符号表"只是LC-3汇编器内部两遍扫描过程中生成的一张"标号-地址"对照表，是单文件内部使用的辅助结构，并不涉及CSAPP里"多目标文件链接、强弱符号"等复杂概念，考试时请以课件的简化版本为准，不要把CSAPP的链接器知识错误地套用进来。
+
+### 模块5：跨章节串联提示
+
+- **与第五章（LC-3指令集）串联**：本章的"第二遍扫描生成机器码"，本质就是第五章"手算16位指令编码"的自动化版本。大题常见套路：先让你手工模拟两遍扫描过程（第七章），验证你算出的机器码是否和你在第五章学的编码规则一致。
+- **与第八章（数据结构）串联**：课件本章末尾提到"利用EXTERNAL声明外部符号，配合JSRR调用外部子程序"（page-10），这与第八章子程序调用机制（JSR/JSRR的选择依据）直接相关——如果目标子程序地址未知或超出JSR跳转范围，必须用JSRR+外部符号声明的方式解决，这是两章结合的隐藏考点。
+- **隐藏考点**：本章.BLKW/.FILL/.STRINGZ的用法，会在第九章、第十章的实际编程题里被大量使用（比如KBSRPtr .FILL xFE00这类设备寄存器地址定义），如果这里的伪操作语义没吃透，后面看到实际系统编程代码会看不懂变量是怎么分配和初始化的。
+
+
+## 第八章：数据结构
+
+### 模块1：3分钟速记脑图
+
+```
+第八章(数据结构)
+├─ 子程序(Subroutine)
+│   ├─ 定义: 用户空间运行,预定义任务,调用后返回控制权(非OS服务)
+│   ├─ JSR(PC相对±1023) / JSRR(寄存器寻址,不限距离)
+│   ├─ 调用约定: R7存返回地址,Callee Save规范
+│   └─ RET = JMP R7 的助记符
+├─ 栈(Stack)
+│   ├─ LIFO(后进先出): PUSH/POP
+│   ├─ 实现: R6作TOP指针,向低地址增长
+│   ├─ PUSH: R6-1,再STR存数据
+│   └─ POP: 先LDR取数据,再R6+1
+├─ 队列(Queue)
+│   ├─ FIFO(先进先出): INSERT/REMOVE
+│   ├─ 双指针: FRONT(队首)+BEAR(队尾,即REAR)
+│   ├─ 环形实现: 到达末尾要回卷到起始单元
+│   └─ n个单元最多存n-1个元素(否则满/空无法区分)
+└─ 字符串(String)
+    ├─ 编码: 每单元存ASCII码
+    └─ 边界方法: 长度前缀法(Pascal) vs 哨兵结尾法(C/LC-3,用'\0')
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 子程序（Subroutine）——与TRAP服务程序的关键区别
+
+课件定义（page-3）："子程序：在用户空间运行，执行一个预定义好的任务，被另一个用户程序调用，执行完毕后将控制权返回给调用程序。与服务程序类似，但不是操作系统的一部分，不与受保护的硬件资源打交道，不需要特权"。
+
+人话拆解：子程序和TRAP服务程序长得很像（都是"跳走执行一段代码再跳回来"），但本质完全不同——子程序是普通用户代码，谁都能写、谁都能调；TRAP服务程序属于操作系统，需要特权才能访问硬件资源。
+
+⚠️易错陷阱：很多人把JSR和TRAP混为一谈，认为两者都是"调用别的代码"所以没区别。真正的区别是**权限层级**——JSR跳转的是用户自己写的代码（不涉及特权切换），TRAP跳转的是操作系统内核代码（涉及从用户态到超级用户态的切换）。这个区别在第九章讲PSR/特权模式时会被反复验证。
+
+#### ② JSR vs JSRR——两种子程序调用指令的选择依据
+
+课件定义（page-4）："JSR：保存当前的PC到R7，跳到一个指定位置（PC相对寻址），目标地址=PC+Sext(IR[10:0])，范围-1024~+1023；第11位定义寻址模式：为1是PC相对寻址，为0是寄存器寻址（此时是JSRR，目标地址=寄存器内容IR[8:6]）"。
+
+人话拆解：JSR就像"近距离直呼其名"，只能喊到±1023条指令内的子程序；JSRR则是"用地址簿"，不管子程序在内存哪个角落，只要把地址存进寄存器，就能精确跳过去，没有距离限制。
+
+⚠️易错陷阱（课件明确留的思考题，page-4）："JSRR具备的什么特征是JSR指令没有的？"——答案是**JSRR可以跳转到任意16位地址范围**，不受±1023的限制，这也是为什么第七章讲外部符号（EXTERNAL）时，必须用JSRR而不是JSR来调用未知位置的外部子程序（因为编译时不知道目标子程序离当前指令有多远，无法保证在JSR范围内）。
+
+#### ③ Callee Save——被调用者保存规范
+
+课件定义（page-7）："一般情况使用'被调用者模式'（Callee Save）：保存任何子程序内部将修改，但子程序返回时不应该改变的值；返回后，恢复输入的参数为初始值（除非被返回值修改）。注意：如果调用任何子程序或服务程序，必须保存R7；否则，将不能返回调用程序"。
+
+人话拆解：这是一种"借东西要还原"的约定——子程序内部想用哪个寄存器都行，但用之前先把原来的值存起来（一般压栈），用完了再恢复回去，这样调用者完全不用担心自己的寄存器会被子程序"偷偷改坏"。
+
+⚠️易错陷阱（超高频）：**R7必须保存**！课件用红字强调这一点——如果子程序内部又调用了别的子程序（或TRAP服务），R7会被新的返回地址覆盖，导致外层子程序"回不了家"（无法RET）。课件例题CountChar子程序里，第一步就是`STR R7,CCR7`，正是为了防止内部调用FirstChar子程序时R7被覆盖。这与网络上x86的Caller-save/Callee-save约定原理相通，但LC-3课件采用的是纯Callee Save模式，不区分寄存器类型，这点与x86 ABI（部分寄存器caller-save，部分callee-save）有差异，考试请以课件的"统一Callee Save"为准。
+
+#### ④ 栈与队列——LIFO vs FIFO 的实现差异
+
+课件定义（page-13）："栈是一种具有LIFO(后进先出)访问特性的存储结构"；队列则是FIFO（先进先出），课件用双指针FRONT和BEAR（即"队尾"REAR的课件用词）实现（page-33）。
+
+栈实现代码（page-17）：
+
+```
+Push:  ADD R6,R6,#-1 ; 先移动指针（向低地址）
+       STR R0,R6,#0  ; 再存数据
+Pop:   LDR R0,R6,#0  ; 先取数据
+       ADD R6,R6,#1  ; 再移动指针
+```
+
+队列满/空判断（page-33）："配备了n个内存单元的队列最多存储n-1个元素"，判断依据：满队列时`BEAR+1==FRONT`，空队列时`FRONT==FRONT`（即两指针相等且无新增/移除操作时视为空）。
+
+⚠️易错陷阱（超高频，课件明确用红字强调）：队列必须"浪费一个格子"！如果n个单元存满n个元素，那么"满"和"空"两种状态下FRONT和BEAR指针位置会完全一样，程序无法区分到底是满还是空——这是环形队列设计的经典陷阱，n个单元最多只能存n-1个元素，这条规则在选择题/判断题里极高频。
+
+### 模块3：栈/队列操作序列"手算模版"（大题必考）
+
+**看到"依次执行一串IN/OUT操作，求栈和队列最终内容"就套下面的判断法：**
+
+
+| 数据结构 | 规则 | 操作模拟方法 |
+| :-- | :-- | :-- |
+| 栈(LIFO) | 后进先出 | 每次IN=压入栈顶，每次OUT=从栈顶弹出（最后进的先出） |
+| 队列(FIFO) | 先进先出 | 每次IN=加入队尾，每次OUT=从队首移除（最先进的先出） |
+
+**课件典型例题（page-43原题）：**
+
+操作序列：IN A, IN B, OUT, IN C, IN D, OUT, IN E, OUT, OUT, IN F
+
+- 栈模拟：A进→[A]；B进→[A,B]；OUT弹出B→[A]；C进→[A,C]；D进→[A,C,D]；OUT弹出D→[A,C]；E进→[A,C,E]；OUT弹出E→[A,C]；OUT弹出C→[A]；F进→[A,F]。**最终栈内容：A F**
+- 队列模拟：A进→[A]；B进→[A,B]；OUT移除A→[B]；C进→[B,C]；D进→[B,C,D]；OUT移除B→[C,D]；E进→[C,D,E]；OUT移除C→[D,E]；OUT移除D→[E]；F进→[E,F]。**最终队列内容：E F**
+
+**关键词提示：**
+
+- 看到"栈" → 永远从"最新加入的一端"操作（栈顶）
+- 看到"队列" → 永远从"两端分别操作"（队尾进、队首出）
+- 看到"求队列满/空判断条件" → 记住n个单元存n-1个元素的规则，套用BEAR+1==FRONT（满）/FRONT==FRONT或无新元素（空）
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "一个能存储10个数据的队列，用10个内存单元实现即可存满10个元素。"
+
+**答案：错误。** 课件明确指出"配备了n个内存单元的队列最多存储n-1个元素"，这是环形队列设计的固有限制——必须留一个"哨兵格"来区分满/空两种状态，否则FRONT和BEAR指针在满/空时会指向同一位置，无法判断到底是哪种状态。如果要存10个元素，至少需要11个内存单元。
+
+**Q2（选择题）：** 子程序A内部调用了子程序B，如果A没有在调用B之前保存R7，会发生什么？A. B无法正确执行 B. A执行完毕后无法返回到最初调用A的程序 C. A和B都会出错 D. 没有影响，因为R7会自动恢复
+
+**答案：B。** 课件明确警告"如果调用任何子程序或服务程序，必须保存R7；否则，将不能返回调用程序"。R7在A调用B时会被B的返回地址覆盖，A执行完B返回后，如果A自己也要RET（用JMP R7），此时R7里存的已经是"返回到A内部某处"的地址，而不是"返回到最初调用A的程序"的地址，导致整个调用链断裂。
+
+- A错：B本身执行没问题，问题出在A后续无法正确返回
+- C错：B不会出错，只是A的返回被破坏了
+- D错：R7绝不会自动恢复，必须程序员手动保存和恢复
+
+**Q3（判断题）：** "JSR和JSRR的本质区别在于JSR用于调用无参数的子程序，JSRR用于调用有参数的子程序。"
+
+**答案：错误。** 课件明确说明两者的区别只在于**寻址方式和跳转距离**——JSR是PC相对寻址（±1023范围），JSRR是寄存器寻址（可跳转到任意16位地址，不受距离限制），与子程序是否有参数完全无关。LC-3子程序传参靠寄存器或栈来完成，与选用JSR还是JSRR无关，这是一个典型的"张冠李戴"型陷阱选项。
+
+### 模块5：跨章节串联提示
+
+- **与第七章（汇编语言）串联**：本章page-10提到的EXTERNAL声明+JSRR调用外部子程序，直接依赖第七章讲的符号表机制——如果目标子程序在另一个未链接的目标文件中，编译时无法确定其地址，必须用JSRR配合外部符号声明来解决，这是两章结合的经典大题。
+- **与第九章（输入输出）串联**：本章讲的栈实现方式（R6作TOP指针，向低地址增长），正是第九章"中断驱动I/O"里超级用户栈/用户栈切换（SSP/USP）的基础——第九章会在此基础上讲解PSR切换时R6如何在两个栈之间切换，如果本章栈操作没吃透，第九章的中断栈切换会很难理解。
+- **隐藏考点**：本章"Callee Save"规范会在第九章TRAP服务程序实现中被再次验证——课件page-32那个TRAP服务程序范例（写字符）里，同样有`STR1,SaveR1`保存寄存器的操作，说明无论是普通子程序还是操作系统服务程序，都要遵循"用前先存，用后再恢复"的统一约定，这是贯穿整个LC-3系统设计的核心哲学。
+
+
+## 第九章：输入输出
+
+### 模块1：3分钟速记脑图
+
+```
+第九章(输入输出)
+├─ 特权与优先级(★概念区分题★)
+│   ├─ 特权(Privilege): 能否执行受限操作(超级用户vs用户)
+│   └─ 优先级(Priority): 谁先获得CPU(PL0最低~PL7最高)
+├─ PSR处理器状态寄存器
+│   PSR运行模式 / PSR[10:8]优先级 / PSR[2:0]NZP状态码
+├─ I/O访问设计维度(★4个二选一决策点★)
+│   ├─ 编址方式: 内存映射 vs 专用IO指令
+│   ├─ 时序: 同步 vs 异步
+│   └─ 控制方: CPU轮询 vs 设备中断
+├─ 内存映射寄存器(★背诵地址★)
+│   KBSR(xFE00)/KBDR(xFE02)/DSR(xFE04)/DDR(xFE06)
+│   状态寄存器第15位=就绪位(ready bit)
+├─ TRAP机制(★流程题核心★)
+│   ├─ 陷入向量表: x0000-x00FF存256个服务程序入口地址
+│   ├─ 常用TRAP: x20(GETC)/x21(OUT)/x22(PUTS)/x23(IN)/x25(HALT)
+│   └─ 返回机制: RTI(从超级用户栈弹出PC和PSR)
+└─ 中断驱动I/O
+    ├─ 触发条件: 就绪位&&中断使能位&&优先级高于当前程序
+    └─ RTI恢复流程: 弹PC→弹PSR→若切回用户模式则恢复USP
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 特权与优先级——两个容易混淆的独立维度
+
+课件定义（page-3）："特权(Privilege)：决定任务是否具备执行某些特定操作（如访问受限内存、修改系统配置）的合法资格。只有运行在内核态的操作系统代码才能调用特权级操作。优先级(Priority)：决定任务获取计算资源（CPU时间片）的先后顺序和紧迫性。LC-3: 8优先等级(PL0-PL7)，数值越大，优先级越高"。
+
+人话拆解：特权回答"你有没有资格做这件事"（能不能），优先级回答"你排第几个做这件事"（先不先）。可以类比机场——特权像"能不能进VIP室"（身份资格），优先级像"排队时你排在第几号"（紧迫程度），两者完全独立，VIP乘客也可能排在普通队伍后面（虽然现实中不会，但逻辑上是两个维度）。
+
+⚠️易错陷阱：很多人认为"优先级高=特权高"，但课件明确这是两个独立的字段（PSR管运行模式即特权，PSR[10:8]管优先级），一个运行在用户模式（无特权）的程序理论上也可以有较高优先级设定，只是LC-3实际系统中通常操作系统/中断服务程序才会被赋予高优先级。
+
+#### ② 内存映射I/O vs 专用I/O指令
+
+课件定义（page-10/11）："内存映射(memory-mapped I/O)：从内存中保留一段空间给外部设备用，给每一个设备寄存器分配内存地址，使用和访问内存相同的指令(Load/Store)访问设备寄存器，访问速度比访问内存慢"；"专用指令：为访问外部设备设计专用的指令(如x86的IN/OUT)，在指令中编码要访问的设备寄存器地址和对应的操作码，空间和内存可以是重叠的"。
+
+人话拆解：内存映射I/O是"设备寄存器伪装成内存地址"，CPU用普通的LD/ST指令就能访问，不需要专门学新指令；专用指令则是"给设备开小灶"，专门设计IN/OUT这类指令来访问，两者的地址空间可以重叠（因为专用指令不占用内存地址总线）。LC-3采用的是**内存映射方式**。
+
+⚠️易错陷阱：容易把"内存映射I/O"和"虚拟内存的内存映射文件（mmap）"混淆——这是两个完全不同的概念！课件这里的"内存映射I/O"专指"把设备寄存器地址纳入CPU统一寻址空间"，与操作系统课程里"文件映射进虚拟内存"没有关系，考试请严格按课件语境理解。
+
+#### ③ 轮询 vs 中断驱动——效率对比的核心考点
+
+课件定义（page-13）："轮询(Polling)：CPU不断检查状态寄存器，直到新的数据到达或设备已经为下一个数据做好准备，缺点：CPU和外设串行工作，利用效率低；中断(Interrupt-driven)：当新数据到达或设备准备好时，设备会发送一个特殊信号到CPU，CPU在此期间可以执行其他任务，CPU和外设可并行工作，利用效率高，但需要专用中断硬件支持"。
+
+课件轮询代码模版（page-17）：
+
+```
+POLL  LDI R0, KBSRPtr    ; 读KBSR状态
+      BRzp POLL           ; 未就绪则继续轮询
+      LDI R0, KBDRPtr    ; 就绪则读取数据
+```
+
+人话拆解：轮询就像"每隔几秒问一次外卖到了没"，中断就像"外卖到了外卖员会主动敲门喊你"——中断的好处很明显，但需要额外的硬件线路来"喊人"，这是硬件成本换软件效率的经典权衡。
+
+⚠️易错陷阱：轮询判断条件里的`BRzp`容易被搞混方向——KBSR（第15位，即最高位/符号位）就绪时为1，此时数值解读为**负数**（最高位1代表负数），所以"未就绪"（第15位=0）对应条件码Z或P（非负），BRzp表示"如果是零或正，就继续轮询"，即"最高位还是0（没来新字符）就死循环等"。很多人会把BRzp和BRn的逻辑方向搞反。
+
+#### ④ TRAP机制——用户程序调用系统服务的标准通道
+
+课件定义（page-25/26/27）：陷入向量表存放在x0000-x00FF，256个服务子程序的起始地址表；"TRAP指令通过指令中8-bit的trap vector来指示调用256个服务子程序中的哪一个"；"如何返回：将当前的PC和PSR压入系统栈中，利用RTI指令返回"。
+
+常用TRAP清单（page-33）：
+
+
+| vector | symbol | 功能 |
+| :-- | :-- | :-- |
+| x20 | GETC | 从键盘读字符到R0，**不回显** |
+| x21 | OUT | 在显示器输出R0中的字符 |
+| x22 | PUTS | 从R0地址开始输出直到NULL |
+| x23 | IN | 显示提示信息，等待输入并回显字符到R0 |
+| x25 | HALT | 停止程序 |
+
+⚠️易错陷阱（超高频）：**GETC(x20)不回显，IN(x23)会回显**！这是判断题/选择题的经典送分陷阱——很多人以为所有键盘输入服务都会自动在屏幕上显示你输入的字符，但GETC是"静默读取"，如果你想要用户输入时能看到自己打的字符，必须用IN，或者用GETC+OUT手动实现回显。
+
+#### ⑤ RTI返回流程——三步严格顺序
+
+课件定义（page-29）："中断返回指令RTI恢复中断前的用户状态：1.将PC从超级用户栈弹出；2.将PSR从超级用户栈弹出；3.如果PSR=1，R6=Saved_USP（如果返回用户模式，需要重新加载用户栈指针；否则不改变栈指针内容）"。
+
+⚠️易错陷阱：弹出顺序是**先PC再PSR**（先弹的在栈顶，即入栈时是先压PSR再压PC，出栈自然先出PC），这个入栈/出栈顺序如果记反，会导致PC和PSR的值张冠李戴。
+
+### 模块3：TRAP执行流程"手算模版"
+
+**看到"分析TRAP指令的完整执行过程"就套下面的标准步骤：**
+
+
+| 步骤 | 操作 | 关键词提示 |
+| :-- | :-- | :-- |
+| Step 1 | 取出TRAP指令中的8位trapvect8，高位补0扩展成16位地址 | 地址范围x0000-x00FF |
+| Step 2 | 用这个16位地址去查陷入向量表，取出里面存的服务程序入口地址 | 这是"查表两次跳转"的关键 |
+| Step 3 | PC←查到的入口地址，开始执行服务程序 | 执行期间可能涉及特权切换 |
+| Step 4 | 服务程序执行完毕，用RTI返回：弹PC→弹PSR→(若切回用户模式)恢复USP | 与JSR用RET(=JMP R7)不同，TRAP必须用RTI |
+
+**关键词提示：**
+
+- 看到"TRAP如何找到服务程序地址" → 陷入向量表是"地址的地址"，需要两次跳转（trapvect8→表项→真正入口）
+- 看到"TRAP服务程序如何返回" → 一定是RTI，不是简单的RET，因为涉及PSR的恢复（特权模式切换）
+- 看到"轮询代码填空" → 记住状态寄存器第15位是ready bit，用BRzp/BRn根据具体就绪位定义方向判断
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "TRAP x20（GETC）和TRAP x23（IN）都会在用户输入字符时自动在屏幕上显示该字符。"
+
+**答案：错误。** 课件明确指出GETC(x20)"不会回显"，只有IN(x23)才会回显，并且IN还会先显示提示信息（默认存储在x04A4的"Enter a character"）。这是本章判断题的最高频陷阱，很多人凭直觉认为所有键盘输入操作都自带回显功能。
+
+**Q2（选择题）：** LC-3采用哪种I/O访问方式？A. 专用I/O指令（类似x86的IN/OUT）B. 内存映射I/O C. 两者混合使用 D. 直接内存访问(DMA)
+
+**答案：B。** 课件明确说明KBSR/KBDR/DSR/DDR都被分配了内存地址(xFE00-xFE06)，用Load/Store指令直接访问。
+
+- A错：这是x86的做法，课件明确对比说明LC-3不采用这种方式
+- C错：课件没有提及LC-3混合使用两种方式
+- D错：DMA是另一种完全不同的I/O技术，课件本章没有涉及DMA机制
+
+**Q3（判断题）：** "中断产生的唯一条件是设备的就绪位被置为1。"
+
+**答案：错误。** 课件明确指出中断信号(INT)产生需要**同时满足三个条件**："当就绪位和中断使能位都置位时，且该设备优先级高于PC当前运行程序的优先级，则产生中断（INT）信号"。只满足"就绪位=1"是不够的，还需要该设备的中断使能位（Interrupt Enable bit）也被置1，并且设备优先级要高于当前程序优先级——三个条件缺一不可，这是理解中断机制最容易漏掉条件的地方。
+
+### 模块5：跨章节串联提示
+
+- **与第八章（数据结构）串联**：TRAP服务程序返回依赖的"系统栈"（超级用户栈），其PUSH/POP实现方式与第八章讲的普通栈完全一致（R6作TOP指针，向低地址增长），只是这里R6在中断/TRAP发生时会在SSP和USP之间切换。大题常见套路：先考栈的基本PUSH/POP实现（第八章），再考中断时R6如何在两个栈间切换保存现场（第九章）。
+- **与第四章（冯诺依曼模型）串联**：本章"指令执行的原子性"（TRAP/中断只能在指令执行完毕后才响应）直接继承自第四章的六步骤模型——第四章讲了理论前提，第九章讲了具体应用（中断必须等当前指令走完S阶段才能插入）。
+- **隐藏考点（与第十章串联）**：第十章会讲"基于栈的算术运算"，这正是中断驱动I/O为什么"必须用栈保存现场"的应用场景之一——课件在第八章page-12就提到"栈的重要作用之一是中断驱动I/O"，如果大题问"为什么中断处理要用栈而不是固定的几个寄存器保存现场"，标准答案就是"支持中断嵌套"——用固定寄存器只能保存一层现场，用栈可以支持多层中断嵌套（高优先级中断打断低优先级中断服务程序）。
+
+
+## 第十章：数据转换与栈应用
+
+### 模块1：3分钟速记脑图
+
+```
+第十章(数据转换与栈应用)
+├─ 数制转换核心问题
+│   计算机内部=二进制补码 vs 人类输入/显示=ASCII字符串
+├─ BinaryToASCII(二进制转字符串,★逆向填数法★)
+│   ├─ Step1: 判断符号,负数先转正(NOT+1),记录符号
+│   ├─ Step2: 反复"除10取余",余数+x30转ASCII,从低位到高位填(所以要倒序存)
+│   └─ Step3: 若原数为负,在最高位前加'-'字符
+├─ ASCIItoBinary(字符串转二进制,★正向累加法★)
+│   ├─ Step1: 判断首字符是否为'-',记录符号,若是则跳过
+│   ├─ Step2: 逐个字符取出,减x30还原数字,累加公式: result=result*10+digit
+│   └─ Step3: 若记录为负,最终结果取反加1(补码negate)
+├─ 栈在表达式求值中的应用(★大题必考★)
+│   ├─ 中缀→后缀(人写的方式→机器好算的方式)
+│   └─ 后缀表达式求值算法: 数字入栈,遇运算符弹出栈顶两个数计算,结果再入栈
+└─ 课程总串联
+    数据表示(Ch2)+ISA(Ch5)+子程序栈(Ch8)+I/O(Ch9) → 完整应用型程序
+```
+
+
+### 模块2：核心概念精讲
+
+#### ① 为什么需要数据转换——人机接口的根本矛盾
+
+课件定义（page-3）："计算机内部所有的数据用二进制补码表示，但是人类通过键盘输入的数字是以ASCII字符串的形式，需要转换成二进制数字才能被计算机处理；同样计算机内部处理完的二进制结果，要以ASCII字符串的形式显示出来才能被人类读懂"。
+
+人话拆解：这一章解决的就是"人看得懂的字符串"和"机器好算的二进制数"之间的双向翻译问题——本质上是把第二章讲的补码知识，和第八/九章讲的栈、I/O知识，全部串联起来做一个完整的实用子程序。
+
+⚠️易错陷阱：很多人以为ASCII码和二进制数值是"同一个东西的不同表示"，但实际上字符'5'的ASCII码是x35（十进制53），和数值5完全是两个不同的二进制串，必须经过"减x30"（或"加x30"）才能互相转换。
+
+#### ② BinaryToASCII——除10取余法的实现细节
+
+课件算法（page-15/16）核心步骤：
+
+1. 若输入为负数，先转换成正数（取反加1），并记录符号
+2. 反复对该数做"除以10取余数"，余数就是这一位对应的十进制数字，加上x30变成ASCII码
+3. 由于除10取余法**先得到的是最低位**，所以必须从字符串的末尾往前填，或者先存入栈中再逐个弹出（这样顺序自然就反过来了）
+4. 若原数为负，最后在最高位前面填上'-'的ASCII码(x2D)
+
+人话拆解：为什么要"除10取余"？因为二进制除法的余数天然对应十进制的每一位数字（比如1234÷10=123余4，这个余数4就是十进制表示中的最低位）。但这个算法有个天生的麻烦——算出来的数字顺序是反的（先得到的是个位，后得到的才是千位），所以课件的标准做法是**借助栈**：把每次算出来的数字依次压栈，最后再依次弹出，弹出的顺序正好是从高位到低位，直接写入结果字符串就是正确顺序。
+
+⚠️易错陷阱（超高频）：这正是为什么第十章要放在第八章（栈）之后讲——"除10取余"产生的数字顺序与最终字符串顺序相反，如果不用栈暂存，直接顺序写入字符串会导致数字**完全倒过来**（比如1234会被错误地写成4321）。这是这道大题最容易失分的隐藏坑，一定要记住"先压栈，再弹栈写入"这个关键操作。
+
+#### ③ ASCIItoBinary——乘10累加法
+
+课件算法（page-8/9）核心步骤：
+
+1. 判断字符串首字符是否为'-'(x2D)，若是则记录负号标记，指针跳过这个字符
+2. 从左到右逐个扫描剩余字符，每个字符减去x30还原成真实数字
+3. 用公式累加：`result = result × 10 + 当前数字`
+4. 扫描完毕后，若之前记录了负号标记，则对result取反加1（转换成负数的补码表示）
+
+人话拆解：这个方向不需要栈，因为字符串本身是"从高位到低位"顺序存储的（比如"1234"从左往右读正好是千位到个位），直接从左到右累乘10再加当前位数字，天然顺序正确，不需要额外倒序处理。
+
+⚠️易错陷阱：这里的"乘10累加"和上面BinaryToASCII的"除10取余"是完全相反的两个方向，考试常常会把这两个算法的适用方向搞混——看到"字符串转数字"就是ASCIItoBinary（乘法累加，不需要栈）；看到"数字转字符串"才是BinaryToASCII（除法取余，需要栈来倒序）。
+
+#### ④ 栈在表达式求值中的应用——后缀表达式算法
+
+课件强调（结合第八章栈知识的应用，page相关章节）：后缀表达式（RPN）求值只需要一个数字栈，规则是"遇到数字就压栈，遇到运算符就弹出栈顶两个数字进行运算，结果再压回栈中"，最终栈中剩下的唯一元素就是答案。
+
+人话拆解：后缀表达式的巧妙之处在于**不需要括号和优先级判断**，因为运算符出现的顺序天然就是"该结合哪两个数"的顺序，用一个栈就能线性扫描一遍算出结果，这正是LC-3这种简单ALU（只有ADD/AND/NOT）也能实现复杂表达式计算器的关键设计思路。
+
+⚠️易错陷阱：弹出两个数字做运算时，**顺序不能颠倒**！比如栈里先压入A后压入B，遇到减号"-"，正确运算是"次顶(A) - 栈顶(B)"，也就是先弹出的B是"减数"，后弹出的A（次顶）才是"被减数"，弄反顺序在加法/乘法里不影响结果，但在减法/除法里会导致答案完全错误。
+
+### 模块3：数据转换"手算模版"（本章唯一但极其重要的计算题）
+
+**看到"手算二进制数XX转ASCII字符串"就套下面的流程：**
+
+
+| 步骤 | 操作 |
+| :-- | :-- |
+| Step 1 | 判断符号位，若为负则先NOT+1转正数，记录负号标记 |
+| Step 2 | 循环执行：当前数÷10，商继续参与下一轮，余数+x30，压入栈 |
+| Step 3 | 商变成0时停止循环 |
+| Step 4 | 依次弹栈，把每个字符按弹出顺序写入结果字符串（此时顺序自然是从高位到低位） |
+| Step 5 | 若记录了负号标记，在字符串最前面插入'-'(x2D) |
+
+**课件典型例题变式：** 将十进制数-25转换成ASCII字符串"-25"
+
+- Step1: -25先转正25，记录负号
+- Step2: 25÷10=2余5→压栈'5'(x35)；2÷10=0余2→压栈'2'(x32)
+- Step3: 商=0，停止
+- Step4: 弹栈顺序：先弹出'2'，再弹出'5'→得到字符串"25"
+- Step5: 加负号→最终字符串"-25"
+
+**看到"手算ASCII字符串XX转二进制数"就套下面的流程：**
+
+
+| 步骤 | 操作 |
+| :-- | :-- |
+| Step 1 | 检查首字符是否是'-'，记录标记，若是则跳过这个字符 |
+| Step 2 | 从左到右扫描剩下的每个字符，减x30得到数字，执行result=result×10+数字 |
+| Step 3 | 扫描完毕后，若有负号标记，则对result取反加1 |
+
+**关键词提示：**
+
+- 看到"数字转字符串/转ASCII" → 除10取余+栈倒序（BinaryToASCII）
+- 看到"字符串转数字/转二进制" → 乘10累加，从左到右直接算（ASCIItoBinary）
+- 看到"后缀表达式求值" → 一个栈，数字入栈，运算符弹出栈顶两个数（注意先弹出的是"右操作数"）
+
+
+### 模块4：高频易错判断题
+
+**Q1（判断题）：** "BinaryToASCII算法中，除10取余得到的余数序列直接按顺序写入字符串，就是正确的十进制表示。"
+
+**答案：错误。** 除10取余得到的**第一个余数是最低位**（个位），如果不经过栈倒序，直接顺序写入会导致整个数字被反过来（比如1234会被错误写成4321）。这正是本章为什么要紧跟在第八章（栈）之后讲的核心原因——必须借助栈的LIFO特性把顺序倒回来。
+
+**Q2（选择题）：** 后缀表达式"3 4 + 2 *"的运算结果是：A. 11 B. 14 C. 10 D. 20
+
+**答案：B。** 逐步用栈求值：3入栈；4入栈；遇"+"，弹出4和3，计算3+4=7，7入栈；2入栈；遇"*"，弹出2和7，计算7*2=14，14入栈。最终结果为14。
+
+- A错：可能是误算成3+4+2×1=11的错误累加方式，没有遵循栈的严格弹出顺序
+- C错：可能是把加号和乘号的运算对象搞混，算成了(3+4)-2×... 之类的错误组合
+- D错：可能是把乘法算成了对整个前面结果重复相加而非正确的一次乘2运算
+
+**Q3（判断题）：** "ASCIItoBinary和BinaryToASCII算法都需要用到栈来处理数字顺序问题。"
+
+**答案：错误。** 只有BinaryToASCII需要栈（因为除10取余产生的数字顺序与最终写入顺序相反，需要栈来倒序）。ASCIItoBinary不需要栈——因为字符串本身天然是从高位到低位排列的，直接从左往右扫描、用"乘10累加"的公式就能顺序正确地还原出数值，完全不需要额外的顺序调整。这是本章最容易被"一刀切"误判的知识点，两个方向算法的辅助数据结构需求并不对称。
+
+### 模块5：跨章节串联提示（全课程收官串联）
+
+- **与第二章（数据表示）串联**：本章"负数先转正再处理"的操作，直接用到第二章讲的补码取负方法（NOT+1）。这是全课程最典型的"前后呼应"考点——期末大题很可能直接要求你手写这个negate操作的LC-3汇编代码，考察的正是第二章的补码运算法则。
+- **与第八章（数据结构）串联**：BinaryToASCII对栈的依赖，以及后缀表达式求值对栈的依赖，都是第八章栈PUSH/POP操作的直接应用场景。期末压轴大题极有可能设计成"实现一个简易计算器：输入ASCII字符串表达式→转换成数字→用栈计算后缀表达式→再把结果转回ASCII输出"，这是把第二、五、八、九、十章全部串联起来的终极综合题。
+- **与第九章（输入输出）串联**：ASCIItoBinary/BinaryToASCII子程序的输入来源和输出去向，往往就是第九章的TRAP x23(IN，带回显读入字符串)和TRAP x22(PUTS，输出字符串)——这是一条完整的"键盘输入字符串→转成二进制运算→结果转回字符串→显示器输出"的系统级数据流，如果期末出一道"完整程序设计题"，几乎一定会把这条链路走一遍。
+
+
+## 考前2小时终极抢救清单
+
+
+### 10个最容易忘的关键数值
+
+| 关键数值/规则 | 内容 | 所属章节 |
+| :-- | :-- | :-- |
+| 寄存器数量/位宽 | LC-3有8个通用寄存器(R0-R7),每个16位 | 第五章 |
+| 指令长度 | 16位固定长度 | 第五章 |
+| 操作码位宽 | 4 bits,共16种指令(2^4) | 第五章 |
+| PC相对寻址范围 | 9位offset,范围-256~+255(LD/ST/LEA) | 第五章 |
+| 基址+偏移寻址范围 | 6位offset,范围-32~+31(LDR/STR) | 第五章 |
+| 立即数(ADD/AND)范围 | 5位补码,范围-16~+15 | 第五章 |
+| n位补码表示范围 | -2^n 到 2^n-1(负数比正数多一个) | 第二章 |
+| 陷入向量表地址范围 | x0000-x00FF,共256个入口 | 第九章 |
+| 设备寄存器地址 | KBSR=xFE00,KBDR=xFE02,DSR=xFE04,DDR=xFE06 | 第九章 |
+| 队列容量规则 | n个内存单元最多存n-1个元素(留哨兵格) | 第八章 |
+
+### 5个最隐蔽的逻辑漏洞
+
+| 逻辑漏洞 | 详细说明 | 所属章节 |
+| :-- | :-- | :-- |
+| LEA指令是否影响条件码 | 很多人误以为LEA不影响NZP,但只要写寄存器就会更新条件码 | 第五章 |
+| .END伪操作的作用 | 只表示编译到此结束,不代表程序运行到此停止,真正停止靠HALT | 第七章 |
+| PC相对寻址的PC值 | PC指的是下一条指令地址(已完成PC+1),不是当前指令地址 | 第四章/第五章 |
+| 溢出判断条件 | 只有同号相加(正+正或负+负)才可能溢出,异号相加绝不会溢出 | 第二章 |
+| GETC与IN的回显区别 | TRAP x20(GETC)不回显,TRAP x23(IN)才会回显字符 | 第九章 |
+
+**考场使用建议：** 拿到卷子先花30秒扫一眼这两张表——如果看到"寄存器/地址范围/立即数位数"相关的空，直接查第一张表；如果看到"判断题里出现绝对化表述（如'一定/绝不/所有'）"，优先怀疑是不是踩了第二张表的坑。特别提醒补码溢出判断和LEA条件码这两条，是历年最容易丢分的隐藏点。</script>
 <script>
-/* ── Three.js Hero Canvas ───────────────────────── */
-(function initHeroCanvas() {
-  const canvas = document.getElementById('hero-canvas');
-  if (!window.THREE) return;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 80;
-
-  // Particles
-  const count = 2200;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  const colorOptions = [
-    [0.0, 0.83, 1.0],   // cyan
-    [0.23, 0.51, 0.96], // blue
-    [0.54, 0.36, 0.96], // purple
-    [0.06, 0.73, 0.51], // green
-  ];
-
-  for (let i = 0; i < count; i++) {
-    positions[i * 3]     = (Math.random() - 0.5) * 200;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 140;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
-    const c = colorOptions[Math.floor(Math.random() * colorOptions.length)];
-    colors[i * 3] = c[0]; colors[i * 3 + 1] = c[1]; colors[i * 3 + 2] = c[2];
-  }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-  const mat = new THREE.PointsMaterial({
-    size: 0.55, vertexColors: true, transparent: true, opacity: 0.75,
-    sizeAttenuation: true,
-  });
-  const particles = new THREE.Points(geo, mat);
-  scene.add(particles);
-
-  // Lines connecting nearby particles
-  const lineMat = new THREE.LineBasicMaterial({
-    color: 0x3b82f6, transparent: true, opacity: 0.06,
-  });
-  const lineGeo = new THREE.BufferGeometry();
-  const linePositions = [];
-  const sample = 300;
-  for (let i = 0; i < sample; i++) {
-    const a = Math.floor(Math.random() * count);
-    const b = Math.floor(Math.random() * count);
-    linePositions.push(
-      positions[a*3], positions[a*3+1], positions[a*3+2],
-      positions[b*3], positions[b*3+1], positions[b*3+2]
-    );
-  }
-  lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-  scene.add(new THREE.LineSegments(lineGeo, lineMat));
-
-  let mouseX = 0, mouseY = 0;
-  document.addEventListener('mousemove', e => {
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 0.4;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 0.4;
-  });
-
-  function animate(t) {
-    requestAnimationFrame(animate);
-    particles.rotation.y = t * 0.00008 + mouseX * 0.3;
-    particles.rotation.x = mouseY * 0.2;
-    renderer.render(scene, camera);
-  }
-  animate(0);
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+(function(){
+var md=document.getElementById('__md').textContent;
+var con=document.getElementById('content');
+con.innerHTML=marked.parse(md);
+if(typeof katex!=='undefined'&&katex.render&&renderMathInElement){
+renderMathInElement(con,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});
+}
+var hs=con.querySelectorAll('h1,h2,h3,h4');
+var items=[];
+var idCount={};
+hs.forEach(function(h){
+var lv=parseInt(h.tagName.charAt(1));
+var txt=h.textContent.trim();
+var id='h-'+txt.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')||('h-'+Math.random().toString(36).slice(2));
+if(idCount[id]==null)idCount[id]=0;else idCount[id]++;
+if(idCount[id]>0)id+='-'+idCount[id];
+h.id=id;h.classList.add('toc-anchor');
+items.push({l:lv,t:txt,i:id});
+});
+var toc=document.getElementById('toc');
+items.forEach(function(it){
+var li=document.createElement('li');
+var a=document.createElement('a');
+a.href='#'+it.i;a.className='h'+it.l;a.textContent=it.t;
+a.onclick=function(e){e.preventDefault();var t=document.getElementById(it.i);if(t){t.scrollIntoView({behavior:'smooth',block:'start'});if(window.innerWidth<=768)closeSidebar()}};
+li.appendChild(a);toc.appendChild(li);
+});
+var links=toc.querySelectorAll('a');
+var main=document.getElementById('main');
+var ticking=false;
+function upd(){
+var cur='';
+for(var i=0;i<items.length;i++){
+var el=document.getElementById(items[i].i);if(!el)continue;
+if(el.getBoundingClientRect().top<=100)cur=items[i].i;else break;
+}
+links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+cur)});
+ticking=false;
+}
+main.addEventListener('scroll',function(){if(!ticking){requestAnimationFrame(upd);ticking=true}});
+upd();
+window.toggleSidebar=function(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')};
+window.closeSidebar=function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')};
 })();
-
-/* ── Init on DOM ready ─────────────────────────── */
-document.addEventListener('DOMContentLoaded', initSampleImages);
-
-/* ── Counter Animation ──────────────────────────── */
-function animateCounters() {
-  document.querySelectorAll('[data-count]').forEach(el => {
-    const target = parseFloat(el.dataset.count);
-    const isDecimal = String(target).includes('.');
-    let start = 0;
-    const duration = 2000;
-    const step = timestamp => {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      const val = target * ease;
-      el.textContent = isDecimal ? val.toFixed(1) : Math.round(val);
-      if (progress < 1) requestAnimationFrame(step);
-      else el.textContent = isDecimal ? target.toFixed(1) : target;
-    };
-    requestAnimationFrame(step);
-  });
-}
-window.addEventListener('load', () => setTimeout(animateCounters, 500));
-
-/* ── Scroll Reveal ──────────────────────────────── */
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => entry.target.classList.add('visible'), i * 80);
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-/* ── Charts ─────────────────────────────────────── */
-const chartInstances = {};
-function initCharts() {
-  const gridColor = 'rgba(0,0,0,0.06)';
-  const textColor = '#3b5280';
-  Chart.defaults.color = textColor;
-
-  const baseOptions = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } },
-    scales: {
-      x: { grid: { color: gridColor }, ticks: { font: { size: 11 } } },
-      y: { grid: { color: gridColor }, ticks: { font: { size: 11 } } }
-    }
-  };
-
-  const methods = ['UNet','UNet++','TransUNet','Swin-UNet','MISSFormer','H2Former'];
-  const h2Color = getComputedStyle(document.documentElement).getPropertyValue('--accent-cyan').trim();
-  const othersColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-blue').trim();
-
-  // Convert hex to rgba
-  function hexToRgba(hex, alpha = 1) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-  
-  const h2Rgba = hexToRgba(h2Color, 0.85);
-  const othersRgba = hexToRgba(othersColor, 0.55);
-
-  // Skin
-  if (chartInstances.skin) chartInstances.skin.destroy();
-  chartInstances.skin = new Chart(document.getElementById('chart-skin'), {
-    type: 'bar',
-    data: {
-      labels: methods,
-      datasets: [{
-        label: 'Dice (%)',
-        data: [85.8, 87.1, 88.4, 88.0, 88.6, 91.2],
-        backgroundColor: methods.map(m => m === 'H2Former' ? h2Rgba : othersRgba),
-        borderRadius: 6,
-      }]
-    },
-    options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, min: 82, max: 94 } } }
-  });
-
-  // Polyp
-  if (chartInstances.polyp) chartInstances.polyp.destroy();
-  chartInstances.polyp = new Chart(document.getElementById('chart-polyp'), {
-    type: 'bar',
-    data: {
-      labels: methods,
-      datasets: [{
-        label: 'Dice (%)',
-        data: [82.1, 83.5, 86.7, 85.9, 87.1, 89.3],
-        backgroundColor: methods.map(m => m === 'H2Former' ? h2Rgba : othersRgba),
-        borderRadius: 6,
-      }]
-    },
-    options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, min: 78, max: 93 } } }
-  });
-
-  // Synapse (multi-organ)
-  if (chartInstances.synapse) chartInstances.synapse.destroy();
-  chartInstances.synapse = new Chart(document.getElementById('chart-synapse'), {
-    type: 'radar',
-    data: {
-      labels: ['主动脉','胆囊','脾脏','左肾','右肾','肝脏','胰腺','胃'],
-      datasets: [
-        { label: 'TransUNet', data: [87.2, 63.1, 81.0, 77.1, 80.2, 94.1, 55.9, 75.6], borderColor: hexToRgba(othersColor,0.7), backgroundColor: hexToRgba(othersColor,0.1), borderWidth: 1.5 },
-        { label: 'Swin-UNet', data: [85.5, 66.5, 83.3, 79.6, 79.2, 94.4, 56.4, 66.6], borderColor: hexToRgba('#8b5cf6',0.7), backgroundColor: hexToRgba('#8b5cf6',0.1), borderWidth: 1.5 },
-        { label: 'H2Former', data: [88.5, 68.1, 86.2, 81.5, 82.3, 95.1, 62.4, 77.8], borderColor: hexToRgba(h2Color,0.9), backgroundColor: hexToRgba(h2Color,0.12), borderWidth: 2 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } } },
-      scales: { r: { grid: { color: gridColor }, ticks: { font: { size: 9 }, backdropColor: 'transparent' }, pointLabels: { font: { size: 10 } }, min: 50 } }
-    }
-  });
-
-  // ACDC
-  if (chartInstances.acdc) chartInstances.acdc.destroy();
-  chartInstances.acdc = new Chart(document.getElementById('chart-acdc'), {
-    type: 'bar',
-    data: {
-      labels: ['右心室 (RV)', '心肌 (Myo)', '左心室 (LV)'],
-      datasets: [
-        { label: 'TransUNet', data: [86.7, 87.3, 95.3], backgroundColor: hexToRgba(othersColor,0.5), borderRadius: 4 },
-        { label: 'Swin-UNet', data: [88.1, 84.7, 95.4], backgroundColor: hexToRgba('#8b5cf6',0.5), borderRadius: 4 },
-        { label: 'H2Former', data: [89.5, 87.8, 95.9], backgroundColor: hexToRgba(h2Color,0.75), borderRadius: 4 }
-      ]
-    },
-    options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, min: 80, max: 100 } } }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const chartObserver = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) { initCharts(); chartObserver.disconnect(); }
-    });
-  }, { threshold: 0.2 });
-  const perfEl = document.getElementById('performance');
-  if (perfEl) chartObserver.observe(perfEl);
-});
-
-/* ── Init ───────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  initSampleImages();
-});
-const SAMPLE_CONFIGS = [
-  { name: '视网膜', type: 'fundus',  drawFn: drawFundus },
-  { name: '皮肤镜', type: 'skin',    drawFn: drawSkin },
-  { name: '息肉',   type: 'polyp',   drawFn: drawPolyp },
-];
-
-function drawFundus(ctx, w, h) {
-  // Background
-  const bg = ctx.createRadialGradient(w/2,h/2,10,w/2,h/2,w/2);
-  bg.addColorStop(0,'#3a1200'); bg.addColorStop(0.6,'#1a0800'); bg.addColorStop(1,'#000');
-  ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
-  // Optic disk
-  const od = ctx.createRadialGradient(w*0.4,h*0.45,0,w*0.4,h*0.45,w*0.12);
-  od.addColorStop(0,'rgba(255,220,150,0.9)'); od.addColorStop(1,'rgba(220,160,80,0)');
-  ctx.fillStyle = od;
-  ctx.beginPath(); ctx.arc(w*0.4,h*0.45,w*0.11,0,Math.PI*2); ctx.fill();
-  // Blood vessels
-  ctx.strokeStyle='rgba(180,60,60,0.7)'; ctx.lineWidth=1;
-  for(let i=0;i<6;i++){
-    ctx.beginPath(); ctx.moveTo(w*0.4,h*0.45);
-    ctx.bezierCurveTo(w*(0.4+Math.cos(i)*0.15),h*(0.45+Math.sin(i)*0.15),
-      w*(0.5+Math.cos(i*1.1)*0.2),h*(0.5+Math.sin(i*1.1)*0.2),
-      w*(0.6+Math.cos(i*0.8)*0.2),h*(0.6+Math.sin(i*0.8)*0.2)); ctx.stroke();
-  }
-  // Lesions
-  ctx.fillStyle='rgba(255,220,80,0.6)';
-  [[0.65,0.4,6],[0.7,0.6,4],[0.55,0.7,5],[0.75,0.5,4]].forEach(([x,y,r])=>{
-    ctx.beginPath(); ctx.arc(w*x,h*y,r,0,Math.PI*2); ctx.fill();
-  });
-}
-
-function drawSkin(ctx, w, h) {
-  // Skin background
-  const bg = ctx.createLinearGradient(0,0,w,h);
-  bg.addColorStop(0,'#e8b98c'); bg.addColorStop(1,'#d4956a');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
-  // Lesion
-  ctx.save();
-  ctx.translate(w*0.5,h*0.5);
-  const lg = ctx.createRadialGradient(0,0,0,0,0,w*0.32);
-  lg.addColorStop(0,'rgba(80,30,10,0.9)'); lg.addColorStop(0.6,'rgba(120,50,20,0.7)'); lg.addColorStop(1,'rgba(180,80,30,0)');
-  ctx.fillStyle=lg;
-  ctx.beginPath();
-  ctx.moveTo(w*0.28,0);
-  for(let a=0;a<=Math.PI*2;a+=0.2){
-    const r=w*(0.28+Math.random()*0.04-0.02);
-    ctx.lineTo(r*Math.cos(a),r*Math.sin(a));
-  }
-  ctx.closePath(); ctx.fill();
-  ctx.restore();
-  // Hair lines
-  ctx.strokeStyle='rgba(80,40,10,0.3)'; ctx.lineWidth=0.5;
-  for(let i=0;i<20;i++){
-    ctx.beginPath();
-    const x=Math.random()*w;
-    ctx.moveTo(x,0); ctx.lineTo(x+Math.random()*10-5,h); ctx.stroke();
-  }
-}
-
-function drawPolyp(ctx, w, h) {
-  // Intestinal background
-  const bg = ctx.createLinearGradient(0,0,w,h);
-  bg.addColorStop(0,'#8b3a2a'); bg.addColorStop(0.5,'#6b2a1a'); bg.addColorStop(1,'#4a1a0a');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
-  // Mucosa texture
-  ctx.strokeStyle='rgba(180,100,60,0.2)'; ctx.lineWidth=1;
-  for(let i=0;i<8;i++){
-    ctx.beginPath(); ctx.arc(w/2,h/2,w*(0.1+i*0.08),0,Math.PI*2); ctx.stroke();
-  }
-  // Polyp
-  const pg = ctx.createRadialGradient(w*0.5,h*0.55,0,w*0.5,h*0.55,w*0.22);
-  pg.addColorStop(0,'rgba(240,160,120,0.9)'); pg.addColorStop(0.7,'rgba(200,100,80,0.7)'); pg.addColorStop(1,'rgba(150,60,40,0)');
-  ctx.fillStyle=pg;
-  ctx.beginPath(); ctx.ellipse(w*0.5,h*0.55,w*0.22,h*0.18,0,0,Math.PI*2); ctx.fill();
-  // Highlight
-  ctx.fillStyle='rgba(255,200,150,0.5)';
-  ctx.beginPath(); ctx.ellipse(w*0.45,h*0.5,w*0.06,h*0.04,-0.3,0,Math.PI*2); ctx.fill();
-}
-
-function initSampleImages() {
-  const container = document.getElementById('sample-images');
-  SAMPLE_CONFIGS.forEach((cfg, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'sample-img-btn' + (idx===0?' active':'');
-    btn.title = cfg.name;
-    btn.onclick = () => {
-      document.querySelectorAll('.sample-img-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      setSegType(cfg.type, null);
-      loadSampleToSegCanvas(cfg);
-    };
-    const cv = document.createElement('canvas');
-    cv.className = 'sample-canvas'; cv.width = 120; cv.height = 120;
-    const c = cv.getContext('2d');
-    cfg.drawFn(c, 120, 120);
-    btn.appendChild(cv);
-    container.appendChild(btn);
-    cfg.canvas = cv;
-  });
-  // Load first sample
-  loadSampleToSegCanvas(SAMPLE_CONFIGS[0]);
-}
-
-/* ── Segmentation Demo ──────────────────────────── */
-let currentSegType = 'fundus';
-let sourceImageData = null;
-
-function setSegType(type, btn) {
-  currentSegType = type;
-  if (btn) {
-    document.querySelectorAll('.seg-type-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-}
-
-function loadSampleToSegCanvas(cfg) {
-  const dst = document.getElementById('seg-canvas');
-  const ctx = dst.getContext('2d');
-  ctx.clearRect(0,0,512,512);
-  // Draw sample at full size
-  const tmpCanvas = document.createElement('canvas');
-  tmpCanvas.width = 512; tmpCanvas.height = 512;
-  const tmpCtx = tmpCanvas.getContext('2d');
-  cfg.drawFn(tmpCtx, 512, 512);
-  ctx.drawImage(tmpCanvas, 0, 0);
-  sourceImageData = tmpCanvas;
-  // Reset metrics
-  resetMetrics();
-}
-
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.getElementById('seg-canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,512,512);
-    // Draw image centered and fitted
-    const scale = Math.min(512/img.width, 512/img.height);
-    const sw = img.width*scale, sh = img.height*scale;
-    const ox = (512-sw)/2, oy = (512-sh)/2;
-    ctx.fillStyle = '#000'; ctx.fillRect(0,0,512,512);
-    ctx.drawImage(img, ox, oy, sw, sh);
-    const tmpCanvas = document.createElement('canvas');
-    tmpCanvas.width = 512; tmpCanvas.height = 512;
-    tmpCanvas.getContext('2d').drawImage(canvas, 0, 0);
-    sourceImageData = tmpCanvas;
-    resetMetrics();
-    document.querySelectorAll('.sample-img-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('seg-overlay-info').style.display = 'none';
-  };
-  img.src = URL.createObjectURL(file);
-}
-
-function resetMetrics() {
-  ['m-dice','m-iou','m-acc','m-time'].forEach(id => {
-    document.getElementById(id).textContent = '—';
-  });
-  document.getElementById('seg-overlay-info').style.display = 'none';
-}
-
-async function runSegmentation() {
-  if (!sourceImageData) return;
-  const btn = document.getElementById('process-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> H2Former 推理中...';
-
-  const progressWrap = document.getElementById('progress-wrap');
-  const progressBar = document.getElementById('progress-bar');
-  progressWrap.style.display = 'block';
-  progressBar.style.width = '0%';
-
-  const canvas = document.getElementById('seg-canvas');
-  const ctx = canvas.getContext('2d');
-
-  // Draw source
-  ctx.drawImage(sourceImageData, 0, 0);
-
-  // Simulate progressive stages
-  const stages = [
-    { label: 'Patch Embedding...', progress: 20, delay: 200 },
-    { label: 'CNN Encoder (ResNet-34)...', progress: 45, delay: 300 },
-    { label: 'HTB Attention...', progress: 70, delay: 400 },
-    { label: 'Patch Expanding Decoder...', progress: 88, delay: 300 },
-    { label: '生成分割掩码...', progress: 100, delay: 250 },
-  ];
-
-  for (const stage of stages) {
-    await sleep(stage.delay);
-    progressBar.style.width = stage.progress + '%';
-    btn.innerHTML = `<div class="spinner"></div> ${stage.label}`;
-  }
-
-  await sleep(200);
-
-  // Apply segmentation overlay
-  applySegmentation(ctx, currentSegType);
-
-  // Show overlay tags
-  const overlay = document.getElementById('seg-overlay-info');
-  overlay.style.display = 'flex';
-  if (currentSegType === 'fundus') {
-    overlay.innerHTML = '<span class="seg-tag ex">硬性渗出 EX</span><span class="seg-tag he">出血 HE</span><span class="seg-tag ma">微动脉瘤 MA</span><span class="seg-tag se">软性渗出 SE</span>';
-  } else if (currentSegType === 'skin') {
-    overlay.innerHTML = '<span class="seg-tag he">皮肤病变</span>';
-  } else if (currentSegType === 'polyp') {
-    overlay.innerHTML = '<span class="seg-tag se">结肠息肉</span>';
-  } else {
-    overlay.innerHTML = '<span class="seg-tag ex">右心室 RV</span><span class="seg-tag ma">心肌 Myo</span><span class="seg-tag se">左心室 LV</span>';
-  }
-
-  // Show metrics (based on paper data)
-  const metricsMap = {
-    fundus:  { dice: '87.3', iou: '79.1', acc: '96.8', time: '42' },
-    skin:    { dice: '91.2', iou: '84.0', acc: '95.1', time: '38' },
-    polyp:   { dice: '89.3', iou: '82.5', acc: '96.2', time: '40' },
-    cardiac: { dice: '91.1', iou: '83.9', acc: '97.3', time: '45' },
-  };
-  const m = metricsMap[currentSegType] || metricsMap.skin;
-  animateMetric('m-dice', m.dice);
-  animateMetric('m-iou', m.iou);
-  animateMetric('m-acc', m.acc);
-  animateMetric('m-time', m.time, false);
-
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> 运行 H2Former 分割`;
-  progressWrap.style.display = 'none';
-}
-
-function applySegmentation(ctx, type) {
-  const w = 512, h = 512;
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.globalAlpha = 0.55;
-
-  if (type === 'fundus') {
-    // Hard exudate regions (yellow)
-    ctx.fillStyle = 'rgba(255,230,0,0.7)';
-    [[0.65,0.4,18],[0.7,0.62,14],[0.55,0.72,16],[0.74,0.52,12]].forEach(([x,y,r])=>{
-      ctx.beginPath(); ctx.arc(w*x,h*y,r,0,Math.PI*2); ctx.fill();
-    });
-    // Hemorrhage (red)
-    ctx.fillStyle = 'rgba(220,30,30,0.65)';
-    [[0.3,0.6,22],[0.45,0.72,14]].forEach(([x,y,r])=>{
-      ctx.beginPath(); ctx.arc(w*x,h*y,r,0,Math.PI*2); ctx.fill();
-    });
-    // MA (small, orange)
-    ctx.fillStyle = 'rgba(255,140,0,0.8)';
-    [[0.58,0.35,5],[0.48,0.55,4],[0.72,0.4,5]].forEach(([x,y,r])=>{
-      ctx.beginPath(); ctx.arc(w*x,h*y,r,0,Math.PI*2); ctx.fill();
-    });
-  } else if (type === 'skin') {
-    // Lesion mask
-    const grad = ctx.createRadialGradient(w*0.5,h*0.5,0,w*0.5,h*0.5,w*0.3);
-    grad.addColorStop(0,'rgba(255,80,80,0.7)');
-    grad.addColorStop(0.8,'rgba(255,50,50,0.4)');
-    grad.addColorStop(1,'rgba(255,0,0,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(w*0.75,h*0.5);
-    for(let a=0;a<=Math.PI*2;a+=0.15){
-      const r = w*(0.28+Math.sin(a*5)*0.03+Math.cos(a*3)*0.02);
-      ctx.lineTo(w*0.5+r*Math.cos(a), h*0.5+r*Math.sin(a));
-    }
-    ctx.closePath(); ctx.fill();
-  } else if (type === 'polyp') {
-    ctx.fillStyle = 'rgba(0,220,120,0.6)';
-    ctx.beginPath(); ctx.ellipse(w*0.5,h*0.55,w*0.2,h*0.15,0,0,Math.PI*2); ctx.fill();
-  } else {
-    // Cardiac
-    ctx.fillStyle = 'rgba(239,68,68,0.5)';
-    ctx.beginPath(); ctx.ellipse(w*0.5,h*0.5,w*0.2,h*0.22,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 'rgba(245,158,11,0.5)';
-    ctx.beginPath(); ctx.ellipse(w*0.5,h*0.5,w*0.13,h*0.15,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 'rgba(34,197,94,0.55)';
-    ctx.beginPath(); ctx.ellipse(w*0.5,h*0.5,w*0.07,h*0.08,0,0,Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-}
-
-function animateMetric(id, target, isFloat=true) {
-  const el = document.getElementById(id);
-  const tval = parseFloat(target);
-  let start = null;
-  const dur = 800;
-  const step = (ts) => {
-    if (!start) start = ts;
-    const p = Math.min((ts-start)/dur, 1);
-    const ease = 1-(1-p)**3;
-    el.textContent = isFloat ? (tval*ease).toFixed(1) : Math.round(tval*ease);
-    if (p < 1) requestAnimationFrame(step);
-    else el.textContent = target;
-  };
-  requestAnimationFrame(step);
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-/* ── Nav scroll effect ──────────────────────────── */
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('main-nav');
-  if (window.scrollY > 20) {
-    nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.3)';
-  } else {
-    nav.style.boxShadow = 'none';
-  }
-});
-
-/* ── Drag & Drop ────────────────────────────────── */
-const uploadZone = document.getElementById('upload-zone');
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault(); uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const fakeEvent = { target: { files: [file] } };
-    handleImageUpload(fakeEvent);
-  }
-});
-
 </script>
 </body>
 </html>
