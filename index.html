@@ -365,6 +365,8 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
   *{ animation:none !important; transition:none !important; }
 }
 
+#cloudStatus{position:fixed;right:12px;bottom:12px;z-index:70;padding:7px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--sh);font-size:12px;color:var(--ok);pointer-events:none}
+#cloudStatus.error{color:var(--no);border-color:var(--noline)}
 </style>
 </head>
 <body>
@@ -391,6 +393,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
 <main class="wrap" id="app"></main>
 
 <div id="toast"></div>
+<div id="cloudStatus" role="status" aria-live="polite">☁ 正在连接云端…</div>
 
 <noscript>
   <div style="padding:40px;text-align:center">这个页面需要开启 JavaScript 才能使用。</div>
@@ -442,15 +445,131 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
   var marks = get('marks', {});   // i -> 1
   var days = get('days', {});     // 'YYYY-MM-DD' -> 作答数
 
-  var saveTimer = null;
+  /* ================= 云端同步：全设备共用一份记录 ================= */
+  var CLOUD_URL = 'https://gongmu-eb7a7-default-rtdb.asia-southeast1.firebasedatabase.app/shared-progress.json';
+  var PENDING_KEY = KEY + 'cloudPending';
+  var saveTimer = null, cloudTimer = null, cloudRetryTimer = null;
+  var cloudReady = false, cloudLoading = true, cloudWriting = false, cloudReading = false;
+  var cloudPending = localStorage.getItem(PENDING_KEY) === '1';
+
+  function cloudData() { return { prog: prog, wrong: wrong, marks: marks, days: days }; }
+  function cloudSig() { return JSON.stringify(cloudData()); }
+  var lastDataSig = cloudSig();
+
+  function cloudStatus(text, error) {
+    var el = document.getElementById('cloudStatus');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.toggle('error', !!error);
+  }
+  function queueCloud(delay) {
+    if (!cloudReady || !cloudPending) return;
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(sendCloud, delay == null ? 600 : delay);
+  }
   function save(now) {
     if (saveTimer) clearTimeout(saveTimer);
     var fn = function () {
       set('ui', ui); set('prog', prog); set('wrong', wrong);
       set('marks', marks); set('days', days);
+      var sig = cloudSig();
+      if (sig !== lastDataSig) {
+        lastDataSig = sig;
+        cloudPending = true;
+        localStorage.setItem(PENDING_KEY, '1');
+        cloudStatus('☁ 待同步到云端');
+        queueCloud();
+      }
     };
     if (now) { fn(); return; }
     saveTimer = setTimeout(fn, 150);
+  }
+  function hasProgress(data) {
+    return !!data && ['prog', 'wrong', 'marks', 'days'].some(function (k) {
+      return data[k] && Object.keys(data[k]).length > 0;
+    });
+  }
+  function useCloud(data) {
+    if (!data || typeof data !== 'object') return;
+    var old = cloudData();
+    if (hasProgress(old) && cloudSig() !== JSON.stringify({
+      prog: data.prog || {}, wrong: data.wrong || {},
+      marks: data.marks || {}, days: data.days || {}
+    })) {
+      try { localStorage.setItem(KEY + 'previousLocalBackup', JSON.stringify(old)); } catch (e) {}
+    }
+    prog = data.prog || {}; wrong = data.wrong || {};
+    marks = data.marks || {}; days = data.days || {};
+    set('prog', prog); set('wrong', wrong);
+    set('marks', marks); set('days', days);
+    lastDataSig = cloudSig();
+    sess = null;
+    render();
+  }
+  async function sendCloud() {
+    if (!cloudReady || !cloudPending || cloudWriting) return;
+    cloudWriting = true;
+    var sent = cloudSig();
+    cloudStatus('☁ 正在同步…');
+    try {
+      var res = await fetch(CLOUD_URL, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ updatedAt: Date.now() }, cloudData())),
+        cache: 'no-store', keepalive: true
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (cloudSig() === sent) {
+        cloudPending = false;
+        localStorage.removeItem(PENDING_KEY);
+        cloudStatus('☁ 已同步');
+      }
+    } catch (e) {
+      cloudStatus('☁ 同步失败，记录已存本机', true);
+      clearTimeout(cloudRetryTimer);
+      cloudRetryTimer = setTimeout(function () { queueCloud(0); }, 15000);
+    } finally {
+      cloudWriting = false;
+      if (cloudPending && cloudSig() !== sent) queueCloud();
+    }
+  }
+  async function readCloud(first) {
+    if (cloudReading || cloudWriting || (cloudPending && !first) || document.hidden) return;
+    cloudReading = true;
+    var startedWith = cloudSig();
+    var controller = new AbortController();
+    var timeout = setTimeout(function () { controller.abort(); }, 8000);
+    if (first) cloudStatus('☁ 正在连接云端…');
+    try {
+      var res = await fetch(CLOUD_URL, { cache: 'no-store', signal: controller.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      cloudReady = true;
+      cloudLoading = false;
+      if (cloudPending || cloudSig() !== startedWith) {
+        queueCloud(0);
+      } else if (data && typeof data === 'object') {
+        var incoming = JSON.stringify({
+          prog: data.prog || {}, wrong: data.wrong || {},
+          marks: data.marks || {}, days: data.days || {}
+        });
+        if (incoming !== cloudSig()) useCloud(data);
+        cloudStatus('☁ 已同步');
+      } else if (hasProgress(cloudData())) {
+        cloudPending = true;
+        localStorage.setItem(PENDING_KEY, '1');
+        queueCloud(0);
+      } else {
+        cloudStatus('☁ 云端已连接');
+      }
+    } catch (e) {
+      cloudLoading = false;
+      cloudStatus('☁ 无法连接云端，记录暂存本机', true);
+      clearTimeout(cloudRetryTimer);
+      cloudRetryTimer = setTimeout(function () { readCloud(true); }, 15000);
+    } finally {
+      clearTimeout(timeout);
+      cloudReading = false;
+    }
   }
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -562,6 +681,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
 
   /* ================= 答题 ================= */
   function answer(pick) {
+    if (cloudLoading) { toast('正在读取云端记录，请稍后再答题'); return; }
     ensureSess();
     if (!sess || !sess.ids.length) return;
     var id = sess.ids[sess.pos];
@@ -1012,7 +1132,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
     h += '</div>';
 
     h += '<div class="card fsec" style="margin-top:12px"><h3><span class="idx">!</span>数据</h3>';
-    h += '<div class="row" style="gap:10px;flex-wrap:wrap"><span class="tiny muted" style="flex:1">记录只保存在这台电脑的浏览器里，换浏览器或清缓存会丢失。</span>';
+    h += '<div class="row" style="gap:10px;flex-wrap:wrap"><span class="tiny muted" style="flex:1">练习记录会同步到云端，所有设备共享同一份进度；断网时暂存在本机。</span>';
     h += '<button class="btn sm ghost danger" data-act="reset">清空全部记录</button></div></div>';
 
     h += '<div class="foot">公募基金理论与实践题库　|　' + N + ' 题 · 11 个知识模块　<br>数据来源：比赛用题.xlsx　·　解析与框架为学习辅助，考试以教材为准</div>';
@@ -1070,6 +1190,9 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
     if (!t) return;
     var act = t.getAttribute('data-act');
     var v = t.getAttribute('data-v');
+    if (cloudLoading && ['pick', 'mark', 'addwrong', 'unwrong', 'cleardone', 'reset'].indexOf(act) >= 0) {
+      toast('正在读取云端记录，请稍后操作'); return;
+    }
 
     if (act === 'ch') { ui.ch = +v; sess = null; save(); render(); return; }
     if (act === 'mode') { ui.mode = v; sess = null; save(); render(); return; }
@@ -1193,7 +1316,19 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
   /* ================= 启动 ================= */
   if (ui.tab === 'practice') ensureSess();
   render();
-  window.addEventListener('beforeunload', function () { save(true); });
+  readCloud(true);
+  setInterval(function () {
+    if (!document.hidden && !cloudPending) readCloud(false);
+  }, 12000);
+  window.addEventListener('focus', function () { if (!cloudPending) readCloud(false); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { save(true); if (cloudPending) queueCloud(0); }
+    else if (!cloudPending) readCloud(false);
+  });
+  window.addEventListener('beforeunload', function () {
+    save(true);
+    if (cloudPending) queueCloud(0);
+  });
 })();
 
 </script>
