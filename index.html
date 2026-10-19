@@ -449,8 +449,9 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
   var CLOUD_URL = 'https://gongmu-eb7a7-default-rtdb.asia-southeast1.firebasedatabase.app/shared-progress.json';
   var PENDING_KEY = KEY + 'cloudPending';
   var saveTimer = null, cloudTimer = null, cloudRetryTimer = null;
-  var cloudReady = false, cloudLoading = true, cloudWriting = false, cloudReading = false;
-  var cloudPending = localStorage.getItem(PENDING_KEY) === '1';
+  var cloudReady = false, cloudLoading = false, cloudWriting = false, cloudReading = false;
+  var cloudPending = false;
+  try { cloudPending = localStorage.getItem(PENDING_KEY) === '1'; } catch (e) { /* 浏览器禁止存储时仍能打开网页 */ }
 
   function cloudData() { return { prog: prog, wrong: wrong, marks: marks, days: days }; }
   function cloudSig() { return JSON.stringify(cloudData()); }
@@ -476,7 +477,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
       if (sig !== lastDataSig) {
         lastDataSig = sig;
         cloudPending = true;
-        localStorage.setItem(PENDING_KEY, '1');
+        try { localStorage.setItem(PENDING_KEY, '1'); } catch (e) {}
         cloudStatus('☁ 待同步到云端');
         queueCloud();
       }
@@ -520,7 +521,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
       if (!res.ok) throw new Error('HTTP ' + res.status);
       if (cloudSig() === sent) {
         cloudPending = false;
-        localStorage.removeItem(PENDING_KEY);
+        try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
         cloudStatus('☁ 已同步');
       }
     } catch (e) {
@@ -556,7 +557,7 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
         cloudStatus('☁ 已同步');
       } else if (hasProgress(cloudData())) {
         cloudPending = true;
-        localStorage.setItem(PENDING_KEY, '1');
+        try { localStorage.setItem(PENDING_KEY, '1'); } catch (e) {}
         queueCloud(0);
       } else {
         cloudStatus('☁ 云端已连接');
@@ -681,7 +682,6 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
 
   /* ================= 答题 ================= */
   function answer(pick) {
-    if (cloudLoading) { toast('正在读取云端记录，请稍后再答题'); return; }
     ensureSess();
     if (!sess || !sess.ids.length) return;
     var id = sess.ids[sess.pos];
@@ -1190,9 +1190,6 @@ details.orig p{ font-size:13.5px; color:var(--sub2); line-height:1.75; margin:0 
     if (!t) return;
     var act = t.getAttribute('data-act');
     var v = t.getAttribute('data-v');
-    if (cloudLoading && ['pick', 'mark', 'addwrong', 'unwrong', 'cleardone', 'reset'].indexOf(act) >= 0) {
-      toast('正在读取云端记录，请稍后操作'); return;
-    }
 
     if (act === 'ch') { ui.ch = +v; sess = null; save(); render(); return; }
     if (act === 'mode') { ui.mode = v; sess = null; save(); render(); return; }
